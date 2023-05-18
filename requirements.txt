@@ -1,3 +1,2 @@
 PySimpleGUI==4.60.4
-rsa==4.9
 pycryptodome==3.17

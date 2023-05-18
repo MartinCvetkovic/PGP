@@ -1,8 +1,9 @@
-import rsa
 from Crypto.PublicKey import DSA
+from Crypto.PublicKey import RSA
 
 
 def generate(algorithm, keyLength):
+    """Returns tuple (privateKey, publicKey)"""
     if algorithm == "rsa":
         return generateRsaKey(keyLength)
     elif algorithm == "dsa":
@@ -12,14 +13,10 @@ def generate(algorithm, keyLength):
 
 
 def generateRsaKey(keyLength):
-    return rsa.newkeys(keyLength)
+    key = RSA.generate(keyLength)
+    return key, key.public_key()
 
 
 def generateDsaKey(keyLength):
-    keyPair = DSA.generate(keyLength)
-    return keyPair.y, keyPair.x
-
-
-pubKey, privKey = generate("dsa", 2048)
-print(pubKey)
-print(privKey)
+    key = DSA.generate(keyLength)
+    return key, key.public_key()
