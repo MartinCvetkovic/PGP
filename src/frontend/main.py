@@ -9,7 +9,7 @@ publicKeyRows = []
 
 
 def generateKeys(alg, length, name, email):
-    pub, priv = keygen.generate(alg, length)
+    priv, pub = keygen.generate(alg, length)
     privateKeyRows.append([alg, datetime.now(), "1", pub, priv, str(name), str(email)])
     return
 
