@@ -7,12 +7,32 @@ sg.theme('Dark Amber')
 privateKeyRows = []
 publicKeyRows = []
 
+#0 - Private, 1 - Public
+selectedTable = 0
+
+selectedKeyRow = -1
+
+#Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
+def formatKey(keyString, charsPerLine):
+    key = keyString[keyString.find("KEY-----")+10:keyString.find("-----END")-2]
+    for i in range(1,len(key)//charsPerLine):
+        key = key[:charsPerLine*i+2*(i-1)]+"\n"+key[charsPerLine*i+2*(i-1):]
+    return key
+
+def keyId(keyString):
+    key = keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
+    return key[-63:-42]+"\n"+key[-42:-21]+"\n"+key[-21:]
 
 def generateKeys(alg, length, name, email):
     priv, pub = keygen.generate(alg, length)
-    privateKeyRows.append([alg, datetime.now(), "1", pub.exportKey(), priv.exportKey(), str(name), str(email)])
+    privateKeyRows.append([alg, datetime.now(), keyId(str(pub.exportKey())), "WIP", "WIP", str(name), str(email)])
     return
 
+def deleteKey():
+    global privateKeyRows, publicKeyRows
+    if (selectedKeyRow == -1): return
+    if (selectedTable == 0): privateKeyRows.pop(selectedKeyRow)
+    elif (selectedTable == 1): publicKeyRows.pop(selectedKeyRow)
 
 def openBaseWindow():
     layout = [
@@ -24,21 +44,27 @@ def openBaseWindow():
 
 
 def openKeyWindow():
+    global selectedTable
+    selectedTable = 0
     layout = [
         [
             sg.Button("Privatni prsten", disabled=True, key='-PRBUTTON-'),
             sg.Button("Javni prsten", key='-PUBUTTON-')
         ],
         [
+            sg.Button("Prikazi javni kljuc", disabled=True, key='-SHOWPU-'),
+            sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
+        ],
+        [
             sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
-            sg.Button("Obrisi", disabled=True, button_color=('white', 'red'))
+            sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
         ],
         [
             sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Javni Kljuc', 'Privatni Kljuc', 'Ime', 'Email'],
-                     values=privateKeyRows, key='-PRTABLE-'),
+                     values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE),
             sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Javni Kljuc', 'Vera u Vlasnika', 'Ime', 'Email',
                                'Legitimitet', 'Potpis(i)', 'Vere u potpis(e)'], values=publicKeyRows, key='-PUTABLE-',
-                     visible=False)
+                     visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
     return sg.Window('Kljucevi', layout)
@@ -89,6 +115,11 @@ def openGenWindow():
     ]
     return sg.Window('Novi par kljuceva', layout)
 
+def openKeyDisplayWindow(key):
+    layout = [
+        [sg.Text(key)],
+        [sg.Button("OK", button_color=('black', 'green'))]
+    ]
 
 window = openBaseWindow()
 
@@ -110,15 +141,50 @@ while True:
                 keyWindow.close()
                 break
             if event == "-PUBUTTON-":
+                selectedTable = 1
                 keyWindow["-PUTABLE-"].update(visible=True)
                 keyWindow["-PRTABLE-"].update(visible=False)
                 keyWindow["-PUBUTTON-"].update(disabled=True)
                 keyWindow["-PRBUTTON-"].update(disabled=False)
+
+                selectedKeyRow = -1
+                keyWindow['-KEYDELBUTTON-'].update(disabled=True)
+                keyWindow['-SHOWPU-'].update(disabled=True)
+                keyWindow['-SHOWPR-'].update(disabled=True)
+                keyWindow['-PUTABLE-'].update(select_rows=[])
+                keyWindow['-PRTABLE-'].update(select_rows=[])
+
+
             elif event == "-PRBUTTON-":
+                selectedTable = 0
                 keyWindow["-PUTABLE-"].update(visible=False)
                 keyWindow["-PRTABLE-"].update(visible=True)
                 keyWindow["-PUBUTTON-"].update(disabled=False)
                 keyWindow["-PRBUTTON-"].update(disabled=True)
+
+                selectedKeyRow = -1
+                keyWindow['-KEYDELBUTTON-'].update(disabled=True)
+                keyWindow['-SHOWPU-'].update(disabled=True)
+                keyWindow['-SHOWPR-'].update(disabled=True)
+
+            elif event == "-PRTABLE-":
+                print("private click")
+                if (len(values[event]) == 0): continue
+                selectedKeyRow = values[event][0]
+                keyWindow['-KEYDELBUTTON-'].update(disabled=False)
+                keyWindow['-SHOWPU-'].update(disabled=False)
+                keyWindow['-SHOWPR-'].update(disabled=False)
+            elif event == "-PUTABLE-":
+                print("public click")
+                if (len(values[event]) == 0): continue
+                selectedKeyRow = values[event][0]
+                keyWindow['-KEYDELBUTTON-'].update(disabled=False)
+                keyWindow['-SHOWPU-'].update(disabled=False)
+                keyWindow['-SHOWPR-'].update(disabled=False)
+            elif event == "-KEYDELBUTTON-":
+                deleteKey()
+                if (selectedTable == 0): keyWindow['-PRTABLE-'].update(values=privateKeyRows)
+                elif (selectedTable == 1): keyWindow['-PUTABLE-'].update(values=publicKeyRows)
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
