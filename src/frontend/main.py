@@ -1,10 +1,14 @@
 import PySimpleGUI as sg
 from src.backend import keygen
 from datetime import datetime
+from math import sqrt, floor
 
 sg.theme('Dark Amber')
 
+# [algoritam, timestamp, keyId, ime, email, lozinka, javni kljuc, privatni kljuc]
 privateKeyRows = []
+
+# [???]
 publicKeyRows = []
 
 #0 - Private, 1 - Public
@@ -12,20 +16,25 @@ selectedTable = 0
 
 selectedKeyRow = -1
 
+def extractKey(keyString):
+    return keyString[keyString.find("KEY-----")+10:keyString.find("-----END")-2]
+
 #Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
 def formatKey(keyString, charsPerLine):
-    key = keyString[keyString.find("KEY-----")+10:keyString.find("-----END")-2]
-    for i in range(1,len(key)//charsPerLine):
+    key = extractKey(keyString)
+    for i in range(1,(len(key)//charsPerLine) + 1):
         key = key[:charsPerLine*i+2*(i-1)]+"\n"+key[charsPerLine*i+2*(i-1):]
     return key
 
 def keyId(keyString):
-    key = keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
-    return key[-63:-42]+"\n"+key[-42:-21]+"\n"+key[-21:]
+    key = extractKey(keyString)
+    return key[-64:-42]+"\n"+key[-42:-21]+"\n"+key[-21:]
 
-def generateKeys(alg, length, name, email):
+def generateKeys(alg, length, name, email, password):
     priv, pub = keygen.generate(alg, length)
-    privateKeyRows.append([alg, datetime.now(), keyId(str(pub.exportKey())), "WIP", "WIP", str(name), str(email)])
+    if (alg == "rsa"): alg = "RSA"
+    else: alg = "DSA / ElG"
+    privateKeyRows.append([alg + " - " + str(length), datetime.now(), keyId(str(pub.exportKey())), str(name), str(email), password, extractKey(str(pub.exportKey())), extractKey(str(priv.exportKey()))])
     return
 
 def deleteKey():
@@ -34,6 +43,8 @@ def deleteKey():
     if (selectedTable == 0): privateKeyRows.pop(selectedKeyRow)
     elif (selectedTable == 1): publicKeyRows.pop(selectedKeyRow)
 
+
+# --------------------- Layout prozora --------------------------- #
 def openBaseWindow():
     layout = [
         [sg.Button('Kljucevi')],
@@ -41,7 +52,6 @@ def openBaseWindow():
         [sg.Button('Primi poruku')]
     ]
     return sg.Window('PGP', layout)
-
 
 def openKeyWindow():
     global selectedTable
@@ -60,9 +70,9 @@ def openKeyWindow():
             sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
         ],
         [
-            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Javni Kljuc', 'Privatni Kljuc', 'Ime', 'Email'],
+            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email'],
                      values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE),
-            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Javni Kljuc', 'Vera u Vlasnika', 'Ime', 'Email',
+            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Vera u Vlasnika', 'Ime', 'Email',
                                'Legitimitet', 'Potpis(i)', 'Vere u potpis(e)'], values=publicKeyRows, key='-PUTABLE-',
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
@@ -109,6 +119,10 @@ def openGenWindow():
             sg.InputText(key='-EMAIL-')
         ],
         [
+            sg.Text("Lozinka"),
+            sg.InputText(key='-PASSWORD-')
+        ],
+        [
             sg.Button("OK", button_color=('black', 'green')),
             sg.Button("CANCEL", button_color=('white', 'red'))
         ]
@@ -116,11 +130,27 @@ def openGenWindow():
     return sg.Window('Novi par kljuceva', layout)
 
 def openKeyDisplayWindow(key):
+    charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
     layout = [
-        [sg.Text(key)],
+        [sg.Multiline(key, size=(charsPerLine, (len(key)//charsPerLine)+2 ), text_color=sg.theme_text_color(), background_color=sg.theme_text_element_background_color(), disabled=True)],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
+    return sg.Window('Kljuc', layout)
 
+def openPasswordWindow():
+    layout = [
+        [
+            sg.Text("Lozinka:"), sg.InputText(key='-PASSWORD-')
+        ],
+        [
+            sg.Button("OK", button_color=('black', 'green')),
+            sg.Button("CANCEL", button_color=('white', 'red'))
+        ]
+    ]
+    return sg.Window("Password", layout)
+
+
+# -------------------- main --------------------------- #
 window = openBaseWindow()
 
 while True:
@@ -140,6 +170,7 @@ while True:
             if event == sg.WIN_CLOSED or event == 'Exit':  # If user closed window with X or if user clicked "Exit" button then exit
                 keyWindow.close()
                 break
+
             if event == "-PUBUTTON-":
                 selectedTable = 1
                 keyWindow["-PUTABLE-"].update(visible=True)
@@ -153,7 +184,6 @@ while True:
                 keyWindow['-SHOWPR-'].update(disabled=True)
                 keyWindow['-PUTABLE-'].update(select_rows=[])
                 keyWindow['-PRTABLE-'].update(select_rows=[])
-
 
             elif event == "-PRBUTTON-":
                 selectedTable = 0
@@ -174,17 +204,65 @@ while True:
                 keyWindow['-KEYDELBUTTON-'].update(disabled=False)
                 keyWindow['-SHOWPU-'].update(disabled=False)
                 keyWindow['-SHOWPR-'].update(disabled=False)
+
             elif event == "-PUTABLE-":
                 print("public click")
                 if (len(values[event]) == 0): continue
                 selectedKeyRow = values[event][0]
                 keyWindow['-KEYDELBUTTON-'].update(disabled=False)
                 keyWindow['-SHOWPU-'].update(disabled=False)
-                keyWindow['-SHOWPR-'].update(disabled=False)
+
             elif event == "-KEYDELBUTTON-":
                 deleteKey()
                 if (selectedTable == 0): keyWindow['-PRTABLE-'].update(values=privateKeyRows)
                 elif (selectedTable == 1): keyWindow['-PUTABLE-'].update(values=publicKeyRows)
+                keyWindow['-KEYDELBUTTON-'].update(disabled=True)
+                keyWindow['-SHOWPU-'].update(disabled=True)
+                keyWindow['-SHOWPR-'].update(disabled=True)
+
+            #Prikaz javnog kljuca
+            elif event == "-SHOWPU-":
+                if (selectedTable == 0):
+                    keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][6])
+                else:
+                    #TODO : Prikaz javnog kljuca u PU table
+                    continue
+                keyWindow.hide()
+                while True:
+                    event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
+                    print(event, values)
+                    if event == sg.WIN_CLOSED or event == 'OK':  # If user closed window with X or if user clicked "Exit" button then exit
+                        keyDisplayWindow.close()
+                        break
+                keyWindow.un_hide()
+
+            #Prikaz privatnog kluca
+            elif event == "-SHOWPR-":
+                keyWindow.hide()
+                passwordWindow = openPasswordWindow()
+                match = False
+                while True:
+                    event, values = passwordWindow.read()  # Read the event that happened and the values dictionary
+                    print(event, values)
+                    if event == sg.WIN_CLOSED or event == 'CANCEL':  # If user closed window with X or if user clicked "Exit" button then exit
+                        passwordWindow.close()
+                        break
+                    elif event == 'OK':
+                        print(values['-PASSWORD-'])
+                        if (values['-PASSWORD-'] == privateKeyRows[selectedKeyRow][5]): match = True
+                        passwordWindow.close()
+                        break
+                if (match):
+                    keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][7])
+                else:
+                    keyDisplayWindow = openKeyDisplayWindow("Pogresna lozinka")
+                while True:
+                    event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
+                    print(event, values)
+                    if event == sg.WIN_CLOSED or event == 'OK':  # If user closed window with X or if user clicked "Exit" button then exit
+                        keyDisplayWindow.close()
+                        break
+                keyWindow.un_hide()
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
@@ -199,7 +277,7 @@ while True:
                         break
                     if event == 'OK':
                         generateKeys("rsa" if values["-ALG-"] else "dsa", 1024 if values['-LEN-'] else 2048,
-                                     values['-NAME-'], values['-EMAIL-'])
+                                     values['-NAME-'], values['-EMAIL-'], values['-PASSWORD-'])
                         genWindow.close()
                         break
                 keyWindow = openKeyWindow()
