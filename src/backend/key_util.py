@@ -3,6 +3,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA1
 
 
+
+
 def encryptPrivateKey(privateKey, password):
     h = hashSha1(password)
     return privateKey.export_key('PEM', passphrase=h)

@@ -3,35 +3,14 @@ import PySimpleGUI as sg
 import src.backend.key_util
 from src.backend import keygen
 from datetime import datetime
-from math import sqrt, floor
 from src.backend import import_export
 from src.backend import key_util
+import src.frontend.layouts as layouts
 
 sg.theme('Dark Amber')
 
-# [algoritam,
-# timestamp,
-# keyId,
-# ime,
-# email,
-# hash(lozinka),
-# javni kljuc,
-# privatni kljuc enkriptovan u PEM,
-# javni kljuc objekat]
-privateKeyRows = []
-
-# [algoritam,
-# timestamp,
-# keyId,
-# ime,
-# email,
-# javni kljuc,
-# javni kljuc objekat]
-publicKeyRows = []
-
 # 0 - Private, 1 - Public
 selectedTable = 0
-
 selectedKeyRow = -1
 
 
@@ -50,7 +29,7 @@ def generateKeys(alg, length, name, email, password):
         alg = "RSA"
     else:
         alg = "DSA / ElG"
-    privateKeyRows.append(
+    layouts.privateKeyRows.append(
         [
             alg + " - " + str(length),
             datetime.now(),
@@ -67,157 +46,18 @@ def generateKeys(alg, length, name, email, password):
 
 
 def deleteKey():
-    global privateKeyRows, publicKeyRows
+
     if selectedKeyRow == -1: return
     if selectedTable == 0:
-        privateKeyRows.pop(selectedKeyRow)
+        layouts.privateKeyRows.pop(selectedKeyRow)
     elif selectedTable == 1:
-        publicKeyRows.pop(selectedKeyRow)
+        layouts.publicKeyRows.pop(selectedKeyRow)
 
 
-# --------------------- Layout prozora --------------------------- #
-def openBaseWindow():
-    layout = [
-        [sg.Button('Kljucevi')],
-        [sg.Button('Posalji poruku')],
-        [sg.Button('Primi poruku')]
-    ]
-    return sg.Window('PGP', layout, resizable=True)
-
-
-def openKeyWindow():
-    global selectedTable
-    selectedTable = 0
-    layout = [
-        [
-            sg.Button("Privatni prsten", disabled=True, key='-PRBUTTON-'),
-            sg.Button("Javni prsten", key='-PUBUTTON-')
-        ],
-        [
-            sg.Button("Prikazi javni kljuc", disabled=True, key='-SHOWPU-'),
-            sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
-        ],
-        [
-            sg.Button("Izvezi javni kljuc", disabled=True, key='-EXPORTPU-'),
-            sg.Button("Izvezi privatni kljuc", disabled=True, key='-EXPORTPR-'),
-            sg.FileBrowse("Uvezi kljuc", file_types=(("Pem Files", "*.pem"),), key='-IMPORT-', target='-IMPORTINPUT-'),
-            sg.Input(key='-IMPORTINPUT-', enable_events=True, visible=False)
-        ],
-        [
-            sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
-            sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
-        ],
-        [
-            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ', '          Email          '],
-                     values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True,
-                     select_mode=sg.TABLE_SELECT_MODE_BROWSE),
-            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ', '          Email          ',],
-                     values=publicKeyRows, key='-PUTABLE-',
-                     visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
-        ]
-    ]
-    return sg.Window('Kljucevi', layout, resizable=True)
-
-
-def openSendWindow():
-    layout = [
-        [
-            sg.Text("Slanje poruke")
-        ]
-    ]
-    return sg.Window('Slanje', layout, resizable=True)
-
-
-def openReceiveWindow():
-    layout = [
-        [
-            sg.Text("Prijem poruke")
-        ]
-    ]
-    return sg.Window('Prijem', layout, resizable=True)
-
-
-def openGenWindow():
-    layout = [
-        [
-            sg.Text("Algoritam:"),
-            sg.Radio("RSA", "R1", default=True, key='-ALG-'),
-            sg.Radio("DSA / ElGamal", "R1", default=False)
-        ],
-        [
-            sg.Text("Velicina kljuca:"),
-            sg.Radio("1024", "R2", default=True, key='-LEN-'),
-            sg.Radio("2048", "R2", default=False)
-        ],
-        [
-            sg.Text("Ime"),
-            sg.InputText(key='-NAME-')
-        ],
-        [
-            sg.Text("Email"),
-            sg.InputText(key='-EMAIL-')
-        ],
-        [
-            sg.Text("Lozinka"),
-            sg.InputText(key='-PASSWORD-')
-        ],
-        [
-            sg.Button("OK", button_color=('black', 'green')),
-            sg.Button("CANCEL", button_color=('white', 'red'))
-        ]
-    ]
-    return sg.Window('Novi par kljuceva', layout, resizable=True)
-
-def openCredWindow():
-    layout = [
-        [
-            sg.Text("Ime"),
-            sg.InputText(key='-NAME-')
-        ],
-        [
-            sg.Text("Email"),
-            sg.InputText(key='-EMAIL-')
-        ],
-        [
-            sg.Button("OK", button_color=('black', 'green')),
-            sg.Button("CANCEL", button_color=('white', 'red'))
-        ]
-    ]
-    return sg.Window('Novi par kljuceva', layout, resizable=True)
-
-def openKeyDisplayWindow(key):
-    charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
-    if (charsPerLine < 28): charsPerLine = 28
-    layout = [
-        [
-            sg.Multiline(
-                key,
-                size=(charsPerLine, (len(key) // charsPerLine) + 2),
-                text_color=sg.theme_text_color(),
-                background_color=sg.theme_text_element_background_color(),
-                disabled=True
-            )
-        ],
-        [sg.Button("OK", button_color=('black', 'green'))]
-    ]
-    return sg.Window('Kljuc', layout, resizable=True)
-
-
-def openPasswordWindow():
-    layout = [
-        [
-            sg.Text("Lozinka:"), sg.InputText(key='-PASSWORD-')
-        ],
-        [
-            sg.Button("OK", button_color=('black', 'green')),
-            sg.Button("CANCEL", button_color=('white', 'red'))
-        ]
-    ]
-    return sg.Window("Password", layout, resizable=True)
 
 
 # -------------------- main --------------------------- #
-window = openBaseWindow()
+window = layouts.openBaseWindow()
 
 while True:
     event, values = window.read()  # Read the event that happened and the values dictionary
@@ -228,7 +68,8 @@ while True:
     # Prozor prsten kljuceva
     if event == 'Kljucevi':
         print('open kljucevi')
-        keyWindow = openKeyWindow()
+        keyWindow = layouts.openKeyWindow()
+        selectedTable = 0
         window.close()
         while True:
             event, values = keyWindow.read()  # Read the event that happened and the values dictionary
@@ -288,9 +129,9 @@ while True:
             elif event == "-KEYDELBUTTON-":
                 deleteKey()
                 if (selectedTable == 0):
-                    keyWindow['-PRTABLE-'].update(values=privateKeyRows)
+                    keyWindow['-PRTABLE-'].update(values=layouts.privateKeyRows)
                 elif (selectedTable == 1):
-                    keyWindow['-PUTABLE-'].update(values=publicKeyRows)
+                    keyWindow['-PUTABLE-'].update(values=layouts.publicKeyRows)
                 keyWindow['-KEYDELBUTTON-'].update(disabled=True)
                 keyWindow['-SHOWPU-'].update(disabled=True)
                 keyWindow['-SHOWPR-'].update(disabled=True)
@@ -300,9 +141,9 @@ while True:
             # Prikaz javnog kljuca
             elif event == "-SHOWPU-":
                 if (selectedTable == 0):
-                    keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][6])
+                    keyDisplayWindow = layouts.openKeyDisplayWindow(layouts.privateKeyRows[selectedKeyRow][6])
                 else:
-                    keyDisplayWindow = openKeyDisplayWindow(publicKeyRows[selectedKeyRow][5])
+                    keyDisplayWindow = layouts.openKeyDisplayWindow(layouts.publicKeyRows[selectedKeyRow][5])
                 keyWindow.hide()
                 while True:
                     event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
@@ -315,7 +156,7 @@ while True:
             # Prikaz privatnog kluca
             elif event == "-SHOWPR-":
                 keyWindow.hide()
-                passwordWindow = openPasswordWindow()
+                passwordWindow = layouts.openPasswordWindow()
                 match = False
                 while True:
                     event, values = passwordWindow.read()  # Read the event that happened and the values dictionary
@@ -325,20 +166,20 @@ while True:
                         break
                     elif event == 'OK':
                         print(values['-PASSWORD-'])
-                        if (src.backend.key_util.hashSha1(values['-PASSWORD-']) == privateKeyRows[selectedKeyRow][5]): match = True
+                        if (src.backend.key_util.hashSha1(values['-PASSWORD-']) == layouts.privateKeyRows[selectedKeyRow][5]): match = True
                         passwordWindow.close()
                         break
                 if (match):
-                    keyDisplayWindow = openKeyDisplayWindow(extractKey(str(
+                    keyDisplayWindow = layouts.openKeyDisplayWindow(extractKey(str(
                         key_util.decryptPrivateKey(
-                            privateKeyRows[selectedKeyRow][7],
-                            privateKeyRows[selectedKeyRow][5],
-                            privateKeyRows[selectedKeyRow][0])
+                            layouts.privateKeyRows[selectedKeyRow][7],
+                            layouts.privateKeyRows[selectedKeyRow][5],
+                            layouts.privateKeyRows[selectedKeyRow][0])
                     .exportKey())))
 
 
                 else:
-                    keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
+                    keyDisplayWindow = layouts.openKeyDisplayWindow("Greska: Pogresna lozinka")
                 while True:
                     event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
                     print(event, values)
@@ -349,13 +190,13 @@ while True:
 
             elif event == '-EXPORTPU-':
                 if (selectedTable == 0):
-                    import_export.exportPublicKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][8])
+                    import_export.exportPublicKey(layouts.privateKeyRows[selectedKeyRow][2], layouts.privateKeyRows[selectedKeyRow][8])
                 else:
-                    import_export.exportPublicKey(publicKeyRows[selectedKeyRow][2], publicKeyRows[selectedKeyRow][6])
+                    import_export.exportPublicKey(layouts.publicKeyRows[selectedKeyRow][2], layouts.publicKeyRows[selectedKeyRow][6])
 
             elif event == '-EXPORTPR-':
                 if (selectedTable == 0):
-                    import_export.exportPrivateKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][7])
+                    import_export.exportPrivateKey(layouts.privateKeyRows[selectedKeyRow][2], layouts.privateKeyRows[selectedKeyRow][7])
 
             elif event == '-IMPORTINPUT-':
                 print("a")
@@ -370,7 +211,7 @@ while True:
                         tip = "PR"
                         keyWindow.close()
                         match = False
-                        passwordWindow = openPasswordWindow()
+                        passwordWindow = layouts.openPasswordWindow()
                         while True:
                             event, values = passwordWindow.read()  # Read the event that happened and the values dictionary
                             print(event, values)
@@ -390,9 +231,9 @@ while True:
                             print(str(key.exportKey()))
                             print(str(key.public_key().exportKey()))
 
-                            #keyWindow['-PRTABLE-'].update(values=privateKeyRows)
+                            #keyWindow['-PRTABLE-'].update(values=layouts.privateKeyRows)
                         else:
-                            keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
+                            keyDisplayWindow = layouts.openKeyDisplayWindow("Greska: Pogresna lozinka")
                             while True:
                                 event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
                                 print(event, values)
@@ -404,7 +245,7 @@ while True:
 
 
                     if (str(key) != ""):
-                        credsWindow = openCredWindow()
+                        credsWindow = layouts.openCredWindow()
                         while True:
                             event, values = credsWindow.read()  # Read the event that happened and the values dictionary
                             print(event, values)
@@ -415,7 +256,7 @@ while True:
                                 ime = values['-NAME-']
                                 email = values['-EMAIL-']
                                 if (tip == "PR"):
-                                    privateKeyRows.append([
+                                    layouts.privateKeyRows.append([
                                         alg,
                                         datetime.now(),
                                         keyId(str(key.public_key().exportKey())),
@@ -427,7 +268,7 @@ while True:
                                         key.public_key()
                                     ])
                                 elif (tip == "PU"):
-                                    publicKeyRows.append([
+                                    layouts.publicKeyRows.append([
                                         alg,
                                         datetime.now(),
                                         keyId(str(key.exportKey())),
@@ -438,14 +279,15 @@ while True:
                                     ])
                                 credsWindow.close()
                                 break
-                    keyWindow = openKeyWindow()
-                        #keyWindow['-PUTABLE-'].update(values=publicKeyRows)
+                    keyWindow = layouts.openKeyWindow()
+                    selectedTable = 0
+                    #keyWindow['-PUTABLE-'].update(values=layouts.publicKeyRows)
 
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
                 print("KEYGEN")
-                genWindow = openGenWindow()
+                genWindow = layouts.openGenWindow()
                 keyWindow.close()
                 while True:
                     event, values = genWindow.read()  # Read the event that happened and the values dictionary
@@ -459,13 +301,15 @@ while True:
                                      values['-NAME-'], values['-EMAIL-'], values['-PASSWORD-'])
                         genWindow.close()
                         break
-                keyWindow = openKeyWindow()
-        window = openBaseWindow()
+                keyWindow = layouts.openKeyWindow()
+                selectedTable = 0
+
+        window = layouts.openBaseWindow()
 
     # Prozor slanja poruke
     elif event == 'Posalji poruku':
         print('open posalji poruku')
-        sendWindow = openSendWindow()
+        sendWindow = layouts.openSendWindow()
         window.hide()
         while True:
             event, values = sendWindow.read()  # Read the event that happened and the values dictionary
@@ -479,7 +323,7 @@ while True:
     # Prozor prijema poruke
     elif event == 'Primi poruku':
         print('open primi poruku')
-        receiveWindow = openReceiveWindow()
+        receiveWindow = layouts.openReceiveWindow()
         window.hide()
         while True:
             event, values = receiveWindow.read()  # Read the event that happened and the values dictionary
