@@ -15,11 +15,21 @@ def exportPrivateKey(keyId, privateKey, password):
         f.write(privateKey.export_key('PEM', password))
 
 
-def importKeyRsa(keyId):
+def importPublicKeyRsa(keyId):
     with open(RESOURCES_PATH + str(keyId) + '.pem', 'r') as f:
         return RSA.import_key(f.read())
 
 
-def importKeyDsa(keyId):
+def importPublicKeyDsa(keyId):
     with open(RESOURCES_PATH + str(keyId) + '.pem', 'r') as f:
         return DSA.import_key(f.read())
+
+
+def importPrivatecKeyRsa(keyId, password):
+    with open(RESOURCES_PATH + str(keyId) + '.pem', 'r') as f:
+        return RSA.import_key(f.read(), passphrase=password)
+
+
+def importPrivateKeyDsa(keyId, password):
+    with open(RESOURCES_PATH + str(keyId) + '.pem', 'r') as f:
+        return DSA.import_key(f.read(), passphrase=password)
