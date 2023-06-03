@@ -70,6 +70,8 @@ def receiveWindowLoop():
 
 # --- Prozor prsten kljuceva --- #
 def keyWindowLoop():
+    global selectedTable
+    global selectedKeyRow
     keyWindow = layouts.openKeyWindow()
     selectedTable = 0
     while True:
@@ -247,7 +249,7 @@ def passwordDisplayWindowLoop():
 # --- Prozor trazenja lozinke za uvoz kljuca --- #
 def passwordImportWindowLoop(path):
     with open(path) as f:
-        if (f == None): return
+        if (f is None): return
         s = f.read()
         key, alg = key_util.readKey(s)
         print("Key: " + str(key) + "\nAlgorithm: " + alg)
