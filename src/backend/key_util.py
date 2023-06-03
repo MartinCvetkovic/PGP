@@ -14,17 +14,19 @@ def decryptPrivateKey(privateKey, password, alg):
         return DSA.import_key(privateKey, passphrase=password)
 
 
-def readKey(file):
-    s = file.read()
+def readKey(s):
+    alg = ""
     if ("PUBLIC") in s:
         print("Public key")
         try:
             key = RSA.import_key(s)
             alg = "RSA"
+            return key, alg
         except ValueError:
             try:
                 key = DSA.import_key(s)
                 alg = "DSA"
+                return key, alg
             except ValueError:
                 return
 
@@ -32,12 +34,11 @@ def readKey(file):
         print("Private key")
         if "BEGIN RSA PRIVATE KEY" in s:
             alg = "RSA"
-
+            return "", alg
         elif "BEGIN ENCRYPTED PRIVATE KEY" in s:
             alg = "DSA"
-
-    else: return
-    print("Algorithm")
+            return "", alg
+    else: return "E"
 
 
 def hashSha1(string):

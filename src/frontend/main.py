@@ -120,10 +120,10 @@ def openKeyWindow():
             sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
         ],
         [
-            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email'],
+            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ', '          Email          '],
                      values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True,
                      select_mode=sg.TABLE_SELECT_MODE_BROWSE),
-            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email',],
+            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ', '          Email          ',],
                      values=publicKeyRows, key='-PUTABLE-',
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
@@ -356,8 +356,67 @@ while True:
             elif event == '-IMPORTINPUT-':
                 print("a")
                 with open(values['-IMPORT-']) as f:
+                    keyWindow.close()
                     if (f == None): continue
-                    res = key_util.readKey(f)
+                    s = f.read()
+                    key, alg = key_util.readKey(s)
+                    print("Key: " + str(key) + "\nAlgorithm: " + alg)
+                    if (str(key) == ""):
+                        keyWindow.close()
+                        passwordWindow = openPasswordWindow()
+                        match = False
+                        while True:
+                            event, values = passwordWindow.read()  # Read the event that happened and the values dictionary
+                            print(event, values)
+                            if event == sg.WIN_CLOSED or event == 'CANCEL':  # If user closed window with X or if user clicked "Exit" button then exit
+                                passwordWindow.close()
+                                break
+                            elif event == 'OK':
+                                try:
+                                    p = values['-PASSWORD-']
+                                    key = key_util.decryptPrivateKey(s, key_util.hashSha1(p), alg)
+                                    match = True
+                                except ValueError:
+                                    key = ""
+                                passwordWindow.close()
+                                break
+                        if (match):
+                            print(str(key.exportKey()))
+                            print(str(key.public_key().exportKey()))
+                            keyDisplayWindow = openKeyDisplayWindow("Uspesno uvezen")
+                            privateKeyRows.append([
+                                alg,
+                                datetime.now(),
+                                keyId(str(key.public_key().exportKey())),
+                                "Ime",
+                                "Email",
+                                key_util.hashSha1(p),
+                                extractKey(str(key.public_key().exportKey())),
+                                key_util.encryptPrivateKey(key, p),
+                                key.public_key()
+                            ])
+                            #keyWindow['-PRTABLE-'].update(values=privateKeyRows)
+                        else:
+                            keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
+                        while True:
+                            event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
+                            print(event, values)
+                            if event == sg.WIN_CLOSED or event == 'OK':  # If user closed window with X or if user clicked "Exit" button then exit
+                                keyDisplayWindow.close()
+                                break
+                    else:
+                        publicKeyRows.append([
+                            alg,
+                            datetime.now(),
+                            keyId(str(key.exportKey())),
+                            "Ime",
+                            "Email",
+                            extractKey(str(key.exportKey())),
+                            key
+                        ])
+                    keyWindow = openKeyWindow()
+                        #keyWindow['-PUTABLE-'].update(values=publicKeyRows)
+
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
