@@ -37,11 +37,11 @@ def extractKey(keyString):
 
 
 # Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
-def formatKey(keyString, charsPerLine):
-    key = extractKey(keyString)
-    for i in range(1, (len(key) // charsPerLine) + 1):
-        key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
-    return key
+# def formatKey(keyString, charsPerLine):
+#     key = extractKey(keyString)
+#     for i in range(1, (len(key) // charsPerLine) + 1):
+#         key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
+#     return key
 
 
 def keyId(keyString):
@@ -179,8 +179,15 @@ def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
     if (charsPerLine < 28): charsPerLine = 28
     layout = [
-        [sg.Multiline(key, size=(charsPerLine, (len(key) // charsPerLine) + 2), text_color=sg.theme_text_color(),
-                      background_color=sg.theme_text_element_background_color(), disabled=True)],
+        [
+            sg.Multiline(
+                key,
+                size=(charsPerLine, (len(key) // charsPerLine) + 2),
+                text_color=sg.theme_text_color(),
+                background_color=sg.theme_text_element_background_color(),
+                disabled=True
+            )
+        ],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
     return sg.Window('Kljuc', layout, resizable=True)
