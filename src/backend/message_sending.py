@@ -1,19 +1,19 @@
 from Crypto.Hash import SHA1
 from Crypto.Cipher import DES3
+from Crypto.Random import random
 
 
 def getKeyId(email):
-    return
+    return ''
 
 
 def getEncryptedPrivateKey(email):
-    return
+    return ''
 
 
 def hashSha1(string):
     h = SHA1.new()
     h.update(bytearray(string, 'utf-8'))
-    print(h.hexdigest())
     return h.hexdigest()
 
 def encryptPrivateKey(privateKey, password):
@@ -21,12 +21,35 @@ def encryptPrivateKey(privateKey, password):
     return privateKey.export_key('PEM', h)
 
 
-def decryptPrivateKey(hashedPassword, encryptedPrivateKey, algorithm):
+
+
+def encryptSymmetric(key, plaintext, algorithm):
     if algorithm == "TripleDES":
-        # cipher = DES3.new(hashedPassword, DES3.MODE_CFB)
-        # plaintext = b'We are no longer the knights who say ni!'
-        # msg = cipher.iv + cipher.encrypt(plaintext)
         pass
     elif algorithm == "AES128":
         pass
+    return
+
+
+def messageHash(message):
+    return hashSha1(message)
+
+
+def encryptAsymmetric(key, plaintext, algorithm):
+    if algorithm == "RSA":
+        pass
+    elif algorithm == "DSA / ElG":
+        pass
+    return
+
+
+def concatanateSignatureAndMessage(keyId, signature, message):
+    return keyId + signature + message
+
+
+def getSessionKey():
+    return random.randint()
+
+
+def generateMessage():
     return
