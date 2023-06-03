@@ -159,8 +159,15 @@ def openGenWindow():
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
     layout = [
-        [sg.Multiline(key, size=(charsPerLine, (len(key) // charsPerLine) + 2), text_color=sg.theme_text_color(),
-                      background_color=sg.theme_text_element_background_color(), disabled=True)],
+        [
+            sg.Multiline(
+                key,
+                size=(charsPerLine, (len(key) // charsPerLine) + 2),
+                text_color=sg.theme_text_color(),
+                background_color=sg.theme_text_element_background_color(),
+                disabled=True
+            )
+        ],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
     return sg.Window('Kljuc', layout, resizable=True)
