@@ -1,6 +1,50 @@
 from Crypto.PublicKey import DSA
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA1
+from src.backend.keygen import generate
+import src.frontend.layouts as layouts
+from datetime import datetime
+
+def extractKey(keyString):
+    return keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
+
+
+def keyId(keyString):
+    key = extractKey(keyString)
+    return key[-8:]
+
+
+def generateKeys(alg, length, name, email, password):
+    priv, pub = generate(alg, length)
+    if alg == "rsa":
+        alg = "RSA"
+    else:
+        alg = "DSA / ElG"
+    layouts.privateKeyRows.append(
+        [
+            alg + " - " + str(length),
+            datetime.now(),
+            keyId(str(pub.exportKey())),
+            str(name),
+            str(email),
+            hashSha1(password),
+            extractKey(str(pub.exportKey())),
+            encryptPrivateKey(priv, password),
+            pub
+        ]
+    )
+    return
+
+
+def deleteKey(selectedKeyRow, selectedTable):
+
+    if selectedKeyRow == -1: return
+    if selectedTable == 0:
+        layouts.privateKeyRows.pop(selectedKeyRow)
+    elif selectedTable == 1:
+        layouts.publicKeyRows.pop(selectedKeyRow)
+
+
 
 
 def encryptPrivateKey(privateKey, password):
