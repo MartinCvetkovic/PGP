@@ -4,6 +4,7 @@ from datetime import datetime
 from math import sqrt, floor
 from src.backend import import_export
 from src.backend import message_sending
+from src.backend import key_util
 
 sg.theme('Dark Amber')
 
@@ -67,7 +68,7 @@ def generateKeys(alg, length, name, email, password):
             extractKey(str(pub.exportKey())),
 
             #extractKey(str(priv.exportKey())) - staro,
-            message_sending.encryptPrivateKey(priv, password),
+            key_util.encryptPrivateKey(priv, password),
 
             pub
         ]
@@ -108,7 +109,9 @@ def openKeyWindow():
         ],
         [
             sg.Button("Izvezi javni kljuc", disabled=True, key='-EXPORTPU-'),
-            sg.Button("Izvezi privatni kljuc", disabled=True, key='-EXPORTPR-')
+            sg.Button("Izvezi privatni kljuc", disabled=True, key='-EXPORTPR-'),
+            sg.FileBrowse("Uvezi kljuc", file_types=(("Pem Files", "*.pem"),), key='-IMPORT-', target='-IMPORTINPUT-'),
+            sg.Input(key='-IMPORTINPUT-', enable_events=True, visible=False)
         ],
         [
             sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
@@ -321,7 +324,7 @@ while True:
                         break
                 if (match):
                     keyDisplayWindow = openKeyDisplayWindow(extractKey(str(
-                        message_sending.decryptPrivateKey(
+                        key_util.decryptPrivateKey(
                             privateKeyRows[selectedKeyRow][7],
                             privateKeyRows[selectedKeyRow][5],
                             privateKeyRows[selectedKeyRow][0])
@@ -347,6 +350,12 @@ while True:
             elif event == '-EXPORTPR-':
                 if (selectedTable == 0):
                     import_export.exportPrivateKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][7])
+
+            elif event == '-IMPORTINPUT-':
+                print("a")
+                with open(values['-IMPORT-']) as f:
+                    if (f == None): continue
+                    res = key_util.readKey(f)
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":

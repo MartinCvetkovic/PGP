@@ -27,16 +27,6 @@ def hashSha1(string):
     return h.hexdigest()
 
 
-def encryptPrivateKey(privateKey, password):
-    h = hashSha1(password)
-    return privateKey.export_key('PEM', passphrase=h)
-
-def decryptPrivateKey(privateKey, password, alg):
-    if (alg[:3] == "RSA"):
-        return RSA.import_key(privateKey, passphrase=password)
-    else:
-        return DSA.import_key(privateKey, passphrase=password)
-
 def encryptSymmetric(key, plaintext, algorithm):
     if algorithm == "TripleDES":
         pass
