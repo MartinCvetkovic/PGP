@@ -3,6 +3,7 @@ from src.backend import keygen
 from datetime import datetime
 from math import sqrt, floor
 from src.backend import import_export
+from src.backend import message_sending
 
 sg.theme('Dark Amber')
 
@@ -11,11 +12,10 @@ sg.theme('Dark Amber')
 # keyId,
 # ime,
 # email,
-# lozinka,
+# hash(lozinka),
 # javni kljuc,
-# privatni kljuc,
-# javni kljuc objekat,
-# privatni kljuc objekat]
+# privatni kljuc enkriptovan u PEM,
+# javni kljuc objekat]
 privateKeyRows = []
 
 # [algoritam,
@@ -63,11 +63,13 @@ def generateKeys(alg, length, name, email, password):
             keyId(str(pub.exportKey())),
             str(name),
             str(email),
-            password,
+            message_sending.hashSha1(password),
             extractKey(str(pub.exportKey())),
-            extractKey(str(priv.exportKey())),
-            pub,
-            priv
+
+            #extractKey(str(priv.exportKey())) - staro,
+            message_sending.encryptPrivateKey(priv, password),
+
+            pub
         ]
     )
     return
@@ -305,7 +307,7 @@ while True:
                         break
                     elif event == 'OK':
                         print(values['-PASSWORD-'])
-                        if (values['-PASSWORD-'] == privateKeyRows[selectedKeyRow][5]): match = True
+                        if (message_sending.hashSha1(values['-PASSWORD-']) == privateKeyRows[selectedKeyRow][5]): match = True
                         passwordWindow.close()
                         break
                 if (match):
@@ -328,7 +330,7 @@ while True:
 
             elif event == '-EXPORTPR-':
                 if (selectedTable == 0):
-                    import_export.exportPrivateKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][9], "trt")
+                    import_export.exportPrivateKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][7])
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
@@ -342,6 +344,7 @@ while True:
                         genWindow.close()
                         break
                     if event == 'OK':
+                        print(values['-PASSWORD-'])
                         generateKeys("rsa" if values["-ALG-"] else "dsa", 1024 if values['-LEN-'] else 2048,
                                      values['-NAME-'], values['-EMAIL-'], values['-PASSWORD-'])
                         genWindow.close()

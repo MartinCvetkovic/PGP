@@ -10,9 +10,9 @@ def exportPublicKey(keyId, publicKey):
         f.write(publicKey.export_key('PEM'))
 
 
-def exportPrivateKey(keyId, privateKey, password):
+def exportPrivateKey(keyId, privateKey):
     with open(RESOURCES_PATH + str(keyId) + '.pem', 'wb') as f:
-        f.write(privateKey.export_key('PEM', password))
+        f.write(privateKey)
 
 
 def importPublicKeyRsa(keyId):
