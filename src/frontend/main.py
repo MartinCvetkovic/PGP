@@ -5,7 +5,6 @@ from src.backend import keygen
 from datetime import datetime
 from math import sqrt, floor
 from src.backend import import_export
-from src.backend import message_sending
 from src.backend import key_util
 
 sg.theme('Dark Amber')
@@ -40,14 +39,6 @@ def extractKey(keyString):
     return keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
 
 
-# Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
-# def formatKey(keyString, charsPerLine):
-#     key = extractKey(keyString)
-#     for i in range(1, (len(key) // charsPerLine) + 1):
-#         key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
-#     return key
-
-
 def keyId(keyString):
     key = extractKey(keyString)
     return key[-8:]
@@ -68,10 +59,7 @@ def generateKeys(alg, length, name, email, password):
             str(email),
             src.backend.key_util.hashSha1(password),
             extractKey(str(pub.exportKey())),
-
-            #extractKey(str(priv.exportKey())) - staro,
             key_util.encryptPrivateKey(priv, password),
-
             pub
         ]
     )
