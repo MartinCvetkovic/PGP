@@ -5,10 +5,25 @@ from math import sqrt, floor
 
 sg.theme('Dark Amber')
 
-# [algoritam, timestamp, keyId, ime, email, lozinka, javni kljuc, privatni kljuc]
+# [algoritam,
+# timestamp,
+# keyId,
+# ime,
+# email,
+# lozinka,
+# javni kljuc,
+# privatni kljuc,
+# javni kljuc objekat,
+# privatni kljuc objekat,
+# keyId nemodifikovan]
 privateKeyRows = []
 
-# [???]
+# [algoritam,
+# timestamp,
+# keyId,
+# ime,
+# email,
+# keyID nemodifikovan]
 publicKeyRows = []
 
 # 0 - Private, 1 - Public
@@ -49,9 +64,13 @@ def generateKeys(alg, length, name, email, password):
             str(email),
             password,
             extractKey(str(pub.exportKey())),
-            extractKey(str(priv.exportKey()))
+            extractKey(str(priv.exportKey())),
+            pub,
+            priv,
+            extractKey(str(pub.exportKey()))[-64:]
         ]
     )
+    print(extractKey(str(pub.exportKey()))[-64:])
     return
 
 
@@ -87,8 +106,8 @@ def openKeyWindow():
             sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
         ],
         [
-            sg.Button("Izvezi javni kljuc"),
-            sg.Button("Izvezi privatni kljuc")
+            sg.Button("Izvezi javni kljuc", key='-EXPORTPU-'),
+            sg.Button("Izvezi privatni kljuc", key='-EXPORTPR-')
         ],
         [
             sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
@@ -98,8 +117,8 @@ def openKeyWindow():
             sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email'],
                      values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True,
                      select_mode=sg.TABLE_SELECT_MODE_BROWSE),
-            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Vera u Vlasnika', 'Ime', 'Email',
-                               'Legitimitet', 'Potpis(i)', 'Vere u potpis(e)'], values=publicKeyRows, key='-PUTABLE-',
+            sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email',],
+                     values=publicKeyRows, key='-PUTABLE-',
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
@@ -158,6 +177,7 @@ def openGenWindow():
 
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
+    if (charsPerLine < 28): charsPerLine = 28
     layout = [
         [sg.Multiline(key, size=(charsPerLine, (len(key) // charsPerLine) + 2), text_color=sg.theme_text_color(),
                       background_color=sg.theme_text_element_background_color(), disabled=True)],
@@ -286,7 +306,7 @@ while True:
                 if (match):
                     keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][7])
                 else:
-                    keyDisplayWindow = openKeyDisplayWindow("Pogresna lozinka")
+                    keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
                 while True:
                     event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
                     print(event, values)
@@ -294,6 +314,13 @@ while True:
                         keyDisplayWindow.close()
                         break
                 keyWindow.un_hide()
+
+            elif event == 'EXPORTPU':
+
+                pass
+
+            elif event == 'EXPORTPR':
+                pass
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
