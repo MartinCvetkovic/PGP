@@ -15,7 +15,7 @@ def exportPrivateKey(keyId, privateKey, password):
         f.write(privateKey.export_key('PEM', password))
 
 
-def importPublicKeyRsa(keyId):
+def importKeyRsa(keyId):
     with open(RESOURCES_PATH + str(keyId) + '.pem', 'r') as f:
         return RSA.import_key(f.read())
 

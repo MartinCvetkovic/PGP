@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 from src.backend import keygen
 from datetime import datetime
 from math import sqrt, floor
+from src.backend import import_export
 
 sg.theme('Dark Amber')
 
@@ -14,8 +15,7 @@ sg.theme('Dark Amber')
 # javni kljuc,
 # privatni kljuc,
 # javni kljuc objekat,
-# privatni kljuc objekat,
-# keyId nemodifikovan]
+# privatni kljuc objekat]
 privateKeyRows = []
 
 # [algoritam,
@@ -23,7 +23,8 @@ privateKeyRows = []
 # keyId,
 # ime,
 # email,
-# keyID nemodifikovan]
+# javni kljuc,
+# javni kljuc objekat]
 publicKeyRows = []
 
 # 0 - Private, 1 - Public
@@ -46,7 +47,7 @@ def extractKey(keyString):
 
 def keyId(keyString):
     key = extractKey(keyString)
-    return key[-64:-42] + "\n" + key[-42:-21] + "\n" + key[-21:]
+    return key[-8:]
 
 
 def generateKeys(alg, length, name, email, password):
@@ -66,11 +67,9 @@ def generateKeys(alg, length, name, email, password):
             extractKey(str(pub.exportKey())),
             extractKey(str(priv.exportKey())),
             pub,
-            priv,
-            extractKey(str(pub.exportKey()))[-64:]
+            priv
         ]
     )
-    print(extractKey(str(pub.exportKey()))[-64:])
     return
 
 
@@ -283,8 +282,7 @@ while True:
                 if (selectedTable == 0):
                     keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][6])
                 else:
-                    # TODO : Prikaz javnog kljuca u PU table
-                    continue
+                    keyDisplayWindow = openKeyDisplayWindow(publicKeyRows[selectedKeyRow][5])
                 keyWindow.hide()
                 while True:
                     event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
@@ -322,12 +320,15 @@ while True:
                         break
                 keyWindow.un_hide()
 
-            elif event == 'EXPORTPU':
+            elif event == '-EXPORTPU-':
+                if (selectedTable == 0):
+                    import_export.exportPublicKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][8])
+                else:
+                    import_export.exportPublicKey(publicKeyRows[selectedKeyRow][2], publicKeyRows[selectedKeyRow][6])
 
-                pass
-
-            elif event == 'EXPORTPR':
-                pass
+            elif event == '-EXPORTPR-':
+                if (selectedTable == 0):
+                    import_export.exportPrivateKey(privateKeyRows[selectedKeyRow][2], privateKeyRows[selectedKeyRow][9], "trt")
 
             # Prozor KeyGen
             elif event == "-KEYGENBUTTON-":
