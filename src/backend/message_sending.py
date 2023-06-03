@@ -14,7 +14,11 @@ def hashSha1(string):
     h = SHA1.new()
     h.update(bytearray(string, 'utf-8'))
     print(h.hexdigest())
-    return
+    return h.hexdigest()
+
+def encryptPrivateKey(privateKey, password):
+    h = hashSha1(password)
+    return privateKey.export_key('PEM', h)
 
 
 def decryptPrivateKey(hashedPassword, encryptedPrivateKey, algorithm):
@@ -22,6 +26,7 @@ def decryptPrivateKey(hashedPassword, encryptedPrivateKey, algorithm):
         # cipher = DES3.new(hashedPassword, DES3.MODE_CFB)
         # plaintext = b'We are no longer the knights who say ni!'
         # msg = cipher.iv + cipher.encrypt(plaintext)
+        pass
     elif algorithm == "AES128":
         pass
     return
