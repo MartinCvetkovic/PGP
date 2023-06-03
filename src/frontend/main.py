@@ -180,6 +180,22 @@ def openGenWindow():
     ]
     return sg.Window('Novi par kljuceva', layout, resizable=True)
 
+def openCredWindow():
+    layout = [
+        [
+            sg.Text("Ime"),
+            sg.InputText(key='-NAME-')
+        ],
+        [
+            sg.Text("Email"),
+            sg.InputText(key='-EMAIL-')
+        ],
+        [
+            sg.Button("OK", button_color=('black', 'green')),
+            sg.Button("CANCEL", button_color=('white', 'red'))
+        ]
+    ]
+    return sg.Window('Novi par kljuceva', layout, resizable=True)
 
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
@@ -356,15 +372,17 @@ while True:
             elif event == '-IMPORTINPUT-':
                 print("a")
                 with open(values['-IMPORT-']) as f:
+                    tip = ""
                     keyWindow.close()
                     if (f == None): continue
                     s = f.read()
                     key, alg = key_util.readKey(s)
                     print("Key: " + str(key) + "\nAlgorithm: " + alg)
                     if (str(key) == ""):
+                        tip = "PR"
                         keyWindow.close()
-                        passwordWindow = openPasswordWindow()
                         match = False
+                        passwordWindow = openPasswordWindow()
                         while True:
                             event, values = passwordWindow.read()  # Read the event that happened and the values dictionary
                             print(event, values)
@@ -383,37 +401,55 @@ while True:
                         if (match):
                             print(str(key.exportKey()))
                             print(str(key.public_key().exportKey()))
-                            keyDisplayWindow = openKeyDisplayWindow("Uspesno uvezen")
-                            privateKeyRows.append([
-                                alg,
-                                datetime.now(),
-                                keyId(str(key.public_key().exportKey())),
-                                "Ime",
-                                "Email",
-                                key_util.hashSha1(p),
-                                extractKey(str(key.public_key().exportKey())),
-                                key_util.encryptPrivateKey(key, p),
-                                key.public_key()
-                            ])
+
                             #keyWindow['-PRTABLE-'].update(values=privateKeyRows)
                         else:
                             keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
-                        while True:
-                            event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
-                            print(event, values)
-                            if event == sg.WIN_CLOSED or event == 'OK':  # If user closed window with X or if user clicked "Exit" button then exit
-                                keyDisplayWindow.close()
-                                break
+                            while True:
+                                event, values = keyDisplayWindow.read()  # Read the event that happened and the values dictionary
+                                print(event, values)
+                                if event == sg.WIN_CLOSED or event == 'OK':  # If user closed window with X or if user clicked "Exit" button then exit
+                                    keyDisplayWindow.close()
+                                    break
                     else:
-                        publicKeyRows.append([
-                            alg,
-                            datetime.now(),
-                            keyId(str(key.exportKey())),
-                            "Ime",
-                            "Email",
-                            extractKey(str(key.exportKey())),
-                            key
-                        ])
+                        tip = "PU"
+
+
+                    if (str(key) != ""):
+                        credsWindow = openCredWindow()
+                        while True:
+                            event, values = credsWindow.read()  # Read the event that happened and the values dictionary
+                            print(event, values)
+                            if event == sg.WIN_CLOSED or event == 'CANCEL':  # If user closed window with X or if user clicked "Exit" button then exit
+                                credsWindow.close()
+                                break
+                            elif event == "OK":
+                                ime = values['-NAME-']
+                                email = values['-EMAIL-']
+                                if (tip == "PR"):
+                                    privateKeyRows.append([
+                                        alg,
+                                        datetime.now(),
+                                        keyId(str(key.public_key().exportKey())),
+                                        ime,
+                                        email,
+                                        key_util.hashSha1(p),
+                                        extractKey(str(key.public_key().exportKey())),
+                                        key_util.encryptPrivateKey(key, p),
+                                        key.public_key()
+                                    ])
+                                elif (tip == "PU"):
+                                    publicKeyRows.append([
+                                        alg,
+                                        datetime.now(),
+                                        keyId(str(key.exportKey())),
+                                        ime,
+                                        email,
+                                        extractKey(str(key.exportKey())),
+                                        key
+                                    ])
+                                credsWindow.close()
+                                break
                     keyWindow = openKeyWindow()
                         #keyWindow['-PUTABLE-'].update(values=publicKeyRows)
 
