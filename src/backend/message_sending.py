@@ -1,5 +1,6 @@
-from Crypto.Cipher import DES3, AES
-from Crypto.Random import random
+from Crypto.Cipher import DES3, AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
 from src.backend import key_util
 
 
@@ -41,20 +42,27 @@ def getEncryptedPrivateKey(privateRing, email):
 def encryptSymmetric(key, plaintext, algorithm):
     if algorithm == "TripleDES":
         cipher = DES3.new(key, DES3.MODE_CFB)
-        return cipher.iv + cipher.encrypt(plaintext)
+        # return cipher.iv + cipher.encrypt(bytearray(plaintext, "utf-8")) # mozda ova varijanta radi, ako trenutna nece
+        return cipher.encrypt(bytearray(plaintext, "utf-8"))
     elif algorithm == "AES128":
-        key = b'Sixteen byte key'
         cipher = AES.new(key, AES.MODE_EAX)
-        return cipher.encrypt_and_digest(plaintext)[0]
+        return cipher.encrypt_and_digest(bytearray(plaintext, "utf-8"))[0]
     return ''
 
 
-#print(encryptSymmetric(bytearray("1234567890123456", 'utf-8'), "asdfgh", "AES128"))
-
-
-def encryptAsymmetric(key, plaintext, algorithm):
+def encryptAsymmetricAuthentication(key, plaintext, algorithm):
     if algorithm == "RSA":
+        cipher_rsa = PKCS1_OAEP.new(key)
+        return cipher_rsa.encrypt(get_random_bytes(16))
+    elif algorithm == "DSA / ElG":
         pass
+    return ''
+
+
+def encryptAsymmetricSecrecy(key, plaintext, algorithm):
+    if algorithm == "RSA":
+        cipher_rsa = PKCS1_OAEP.new(key)
+        return cipher_rsa.encrypt(bytearray(plaintext, "utf-8"))
     elif algorithm == "DSA / ElG":
         pass
     return ''
@@ -65,11 +73,7 @@ def concatanateSignatureAndMessage(keyId, signature, message):
 
 
 def getSessionKey():
-    return random.randint()
-
-
-def exportPrivateKey(encryptedPrivateKey, hashedPassword):
-    return ''
+    return get_random_bytes(16)
 
 
 def generateMessage(privateKeyRing, publicKeyRing, email, password, message, assymetricAlgorithm, symmetricAlgorithm):
@@ -82,7 +86,7 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
     privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword, getAlgPrivateRing(privateKeyRing, email))
 
     hashedMessage = key_util.hashSha1(message)
-    encryptedHashedMessage = encryptAsymmetric(privateKey, hashedMessage, assymetricAlgorithm)
+    encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, hashedMessage, assymetricAlgorithm)
 
     signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
 
@@ -90,6 +94,8 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
 
     encryptedSignatureAndMessage = encryptSymmetric(sessionKey, signatureMessage, symmetricAlgorithm)
 
-    encryptedSessionKey = encryptAsymmetric(publicKey, sessionKey, symmetricAlgorithm)
+    encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, symmetricAlgorithm)
 
     return concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
+
+# print(encryptAsymmetricAuthentication(RSA.import_key(open("receiver.pem").read()), "asdfg0", "RSA"))

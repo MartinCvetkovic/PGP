@@ -5,6 +5,7 @@ from src.backend.keygen import generate
 import src.frontend.layouts as layouts
 from datetime import datetime
 
+
 def extractKey(keyString):
     return keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
 

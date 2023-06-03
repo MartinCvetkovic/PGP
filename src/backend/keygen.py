@@ -1,6 +1,5 @@
 from Crypto.PublicKey import DSA
 from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA1
 
 
 def generate(algorithm, keyLength):
