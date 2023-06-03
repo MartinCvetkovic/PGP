@@ -1,7 +1,7 @@
 from Crypto.PublicKey import DSA
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA1
-from src.backend.message_sending import hashSha1
+
 
 def encryptPrivateKey(privateKey, password):
     h = hashSha1(password)
@@ -38,3 +38,9 @@ def readKey(file):
 
     else: return
     print("Algorithm")
+
+
+def hashSha1(string):
+    h = SHA1.new()
+    h.update(bytearray(string, 'utf-8'))
+    return h.hexdigest()

@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+
+import src.backend.key_util
 from src.backend import keygen
 from datetime import datetime
 from math import sqrt, floor
@@ -64,7 +66,7 @@ def generateKeys(alg, length, name, email, password):
             keyId(str(pub.exportKey())),
             str(name),
             str(email),
-            message_sending.hashSha1(password),
+            src.backend.key_util.hashSha1(password),
             extractKey(str(pub.exportKey())),
 
             #extractKey(str(priv.exportKey())) - staro,
@@ -319,7 +321,7 @@ while True:
                         break
                     elif event == 'OK':
                         print(values['-PASSWORD-'])
-                        if (message_sending.hashSha1(values['-PASSWORD-']) == privateKeyRows[selectedKeyRow][5]): match = True
+                        if (src.backend.key_util.hashSha1(values['-PASSWORD-']) == privateKeyRows[selectedKeyRow][5]): match = True
                         passwordWindow.close()
                         break
                 if (match):
