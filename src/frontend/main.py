@@ -26,21 +26,21 @@ def mainWindowLoop():
         if event == 'Kljucevi':
             print('open kljucevi')
             window.close()
-            keyWindowLoop();
+            keyWindowLoop(); # -> (Prozor prsten kljuceva)
             window = layouts.openBaseWindow()
 
         # Prozor slanja poruke
         elif event == 'Posalji poruku':
             print('open posalji poruku')
             window.hide()
-            sendWindowLoop()
+            sendWindowLoop() # -> (Prozor slanja poruke)
             window.un_hide()
 
         # Prozor prijema poruke
         elif event == 'Primi poruku':
             print('open primi poruku')
             window.hide()
-            receiveWindowLoop()
+            receiveWindowLoop() # -> (Prozor prijema poruke)
             window.un_hide()
 
     window.close()
@@ -148,15 +148,15 @@ def keyWindowLoop():
         elif event == "-SHOWPU-":
             keyWindow.hide()
             if (selectedTable == 0):
-                keyDisplayWindowLoop(layouts.privateKeyRows[selectedKeyRow][6])
+                keyDisplayWindowLoop(layouts.privateKeyRows[selectedKeyRow][6]) # -> (Prozor prikaz kljuca)
             else:
-                keyDisplayWindowLoop(layouts.publicKeyRows[selectedKeyRow][5])
+                keyDisplayWindowLoop(layouts.publicKeyRows[selectedKeyRow][5]) # -> (Prozor prikaz kljuca)
             keyWindow.un_hide()
 
         # Prikaz privatnog kluca
         elif event == "-SHOWPR-":
             keyWindow.hide()
-            passwordDisplayWindowLoop()
+            passwordDisplayWindowLoop() # -> (Prozor trazenja lozinke za prikaz kljuca)
             keyWindow.un_hide()
 
         # Izvoz javnog kluca
@@ -179,7 +179,7 @@ def keyWindowLoop():
             print("a")
             tip = ""
             keyWindow.close()
-            passwordImportWindowLoop(values['-IMPORT-'])
+            passwordImportWindowLoop(values['-IMPORT-']) # -> (Prozor trazenja lozinke za uvoz kljuca)
             keyWindow = layouts.openKeyWindow()
             selectedTable = 0
 
@@ -187,7 +187,7 @@ def keyWindowLoop():
         elif event == "-KEYGENBUTTON-":
             print("KEYGEN")
             keyWindow.close()
-            keygenWindowLoop()
+            keygenWindowLoop() # -> (Prozor generisanja kljuca)
             keyWindow = layouts.openKeyWindow()
             selectedTable = 0
 
@@ -238,9 +238,9 @@ def passwordDisplayWindowLoop():
                         layouts.privateKeyRows[selectedKeyRow][7],
                         layouts.privateKeyRows[selectedKeyRow][5],
                         layouts.privateKeyRows[selectedKeyRow][0])
-                        .exportKey())))
+                        .exportKey()))) # -> (Prozor prikaz kljuca)
             else:
-                keyDisplayWindowLoop("Greska: Pogresna lozinka")
+                keyDisplayWindowLoop("Greska: Pogresna lozinka") # -> (Prozor prikaz kljuca (greske))
             break
 
 
@@ -291,7 +291,7 @@ def passwordImportWindowLoop(path):
 
         # Input imena i email-a od korisnika
         if (str(key) != ""):
-            credsWindowLoop(tip, key, alg, p)
+            credsWindowLoop(tip, key, alg, p) # -> (Prozor trazenja imena i maila za uvoz kljuca)
 
 
 # --- Prozor trazenja imena i maila za uvoz kljuca --- #
@@ -335,4 +335,4 @@ def credsWindowLoop(tip, key, alg, p):
 
 
 #Poziv pocetnog prozora
-mainWindowLoop()
+mainWindowLoop() # -> (Glavni prozor)
