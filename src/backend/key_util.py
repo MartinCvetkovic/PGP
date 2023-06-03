@@ -39,7 +39,8 @@ def readKey(s):
         elif "BEGIN ENCRYPTED PRIVATE KEY" in s:
             alg = "DSA"
             return "", alg
-    else: return "E"
+    else:
+        return "E"
 
 
 def hashSha1(string):
