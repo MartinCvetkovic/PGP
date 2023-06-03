@@ -1,6 +1,8 @@
 from Crypto.Hash import SHA1
 from Crypto.Cipher import DES3
 from Crypto.Random import random
+from Crypto.PublicKey import DSA
+from Crypto.PublicKey import RSA
 
 
 def getKeyId(email):
@@ -20,6 +22,11 @@ def encryptPrivateKey(privateKey, password):
     h = hashSha1(password)
     return privateKey.export_key('PEM', h)
 
+def decryptPrivateKey(privateKey, password, alg):
+    if (alg[:3] == "RSA"):
+        return RSA.import_key(privateKey, passphrase=password)
+    else:
+        return DSA.import_key(privateKey, passphrase=password)
 
 
 

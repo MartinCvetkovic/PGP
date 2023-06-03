@@ -311,7 +311,14 @@ while True:
                         passwordWindow.close()
                         break
                 if (match):
-                    keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][7])
+                    keyDisplayWindow = openKeyDisplayWindow(extractKey(str(
+                        message_sending.decryptPrivateKey(
+                            privateKeyRows[selectedKeyRow][7],
+                            privateKeyRows[selectedKeyRow][5],
+                            privateKeyRows[selectedKeyRow][0])
+                    .exportKey())))
+
+
                 else:
                     keyDisplayWindow = openKeyDisplayWindow("Greska: Pogresna lozinka")
                 while True:
