@@ -5,11 +5,19 @@ from Crypto.PublicKey import DSA
 from Crypto.PublicKey import RSA
 
 
-def getKeyId(email):
+def getKeyIdPublicRing(publicRing, email):
     return ''
 
 
-def getEncryptedPrivateKey(email):
+def getPublicKeyPublicRing(publicRing, email):
+    return ''
+
+
+def getKeyIdPrivateRing(privateRing, email):
+    return ''
+
+
+def getEncryptedPrivateKey(privateRing, email):
     return ''
 
 
@@ -17,6 +25,7 @@ def hashSha1(string):
     h = SHA1.new()
     h.update(bytearray(string, 'utf-8'))
     return h.hexdigest()
+
 
 def encryptPrivateKey(privateKey, password):
     h = hashSha1(password)
@@ -28,14 +37,12 @@ def decryptPrivateKey(privateKey, password, alg):
     else:
         return DSA.import_key(privateKey, passphrase=password)
 
-
-
 def encryptSymmetric(key, plaintext, algorithm):
     if algorithm == "TripleDES":
         pass
     elif algorithm == "AES128":
         pass
-    return
+    return ''
 
 
 def messageHash(message):
@@ -47,7 +54,7 @@ def encryptAsymmetric(key, plaintext, algorithm):
         pass
     elif algorithm == "DSA / ElG":
         pass
-    return
+    return ''
 
 
 def concatanateSignatureAndMessage(keyId, signature, message):
@@ -58,5 +65,28 @@ def getSessionKey():
     return random.randint()
 
 
-def generateMessage():
-    return
+def exportPrivateKey(encryptedPrivateKey, hashedPassword):
+    return ''
+
+
+def generateMessage(privateKeyRing, publicKeyRing, email, password, message, assymetricAlgorithm, symmetricAlgorithm):
+    privateKeyId = getKeyIdPrivateRing(privateKeyRing, email)
+    publicKeyId = getKeyIdPublicRing(publicKeyRing, email)
+    encryptedPrivateKey = getEncryptedPrivateKey(privateKeyRing, email)
+    publicKey = getPublicKeyPublicRing(publicKeyRing, email)
+    hashedPassword = hashSha1(password)
+
+    privateKey = exportPrivateKey(encryptedPrivateKey, hashedPassword)
+
+    hashedMessage = hashSha1(message)
+    encryptedHashedMessage = encryptAsymmetric(privateKey, hashedMessage, assymetricAlgorithm)
+
+    signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
+
+    sessionKey = getSessionKey()
+
+    encryptedSignatureAndMessage = encryptSymmetric(sessionKey, signatureMessage, symmetricAlgorithm)
+
+    encryptedSessionKey = encryptAsymmetric(publicKey, sessionKey, symmetricAlgorithm)
+
+    return concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
