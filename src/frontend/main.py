@@ -22,11 +22,11 @@ def extractKey(keyString):
 
 
 # Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
-def formatKey(keyString, charsPerLine):
-    key = extractKey(keyString)
-    for i in range(1, (len(key) // charsPerLine) + 1):
-        key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
-    return key
+# def formatKey(keyString, charsPerLine):
+#     key = extractKey(keyString)
+#     for i in range(1, (len(key) // charsPerLine) + 1):
+#         key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
+#     return key
 
 
 def keyId(keyString):
