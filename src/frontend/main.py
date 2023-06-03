@@ -71,7 +71,7 @@ def openBaseWindow():
         [sg.Button('Posalji poruku')],
         [sg.Button('Primi poruku')]
     ]
-    return sg.Window('PGP', layout)
+    return sg.Window('PGP', layout, resizable=True)
 
 
 def openKeyWindow():
@@ -99,7 +99,7 @@ def openKeyWindow():
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
-    return sg.Window('Kljucevi', layout)
+    return sg.Window('Kljucevi', layout, resizable=True)
 
 
 def openSendWindow():
@@ -108,7 +108,7 @@ def openSendWindow():
             sg.Text("Slanje poruke")
         ]
     ]
-    return sg.Window('Slanje', layout)
+    return sg.Window('Slanje', layout, resizable=True)
 
 
 def openReceiveWindow():
@@ -117,7 +117,7 @@ def openReceiveWindow():
             sg.Text("Prijem poruke")
         ]
     ]
-    return sg.Window('Prijem', layout)
+    return sg.Window('Prijem', layout, resizable=True)
 
 
 def openGenWindow():
@@ -149,7 +149,7 @@ def openGenWindow():
             sg.Button("CANCEL", button_color=('white', 'red'))
         ]
     ]
-    return sg.Window('Novi par kljuceva', layout)
+    return sg.Window('Novi par kljuceva', layout, resizable=True)
 
 
 def openKeyDisplayWindow(key):
@@ -159,7 +159,7 @@ def openKeyDisplayWindow(key):
                       background_color=sg.theme_text_element_background_color(), disabled=True)],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
-    return sg.Window('Kljuc', layout)
+    return sg.Window('Kljuc', layout, resizable=True)
 
 
 def openPasswordWindow():
@@ -172,7 +172,7 @@ def openPasswordWindow():
             sg.Button("CANCEL", button_color=('white', 'red'))
         ]
     ]
-    return sg.Window("Password", layout)
+    return sg.Window("Password", layout, resizable=True)
 
 
 # -------------------- main --------------------------- #
