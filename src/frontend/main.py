@@ -66,6 +66,10 @@ def openKeyWindow():
             sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
         ],
         [
+            sg.Button("Izvezi javni kljuc"),
+            sg.Button("Izvezi privatni kljuc")
+        ],
+        [
             sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
             sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
         ],
