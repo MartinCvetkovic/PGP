@@ -12,7 +12,7 @@ def exportPublicKey(keyId, publicKey):
 
 def exportPrivateKey(keyId, privateKey):
     with open(RESOURCES_PATH + str(keyId) + '.pem', 'wb') as f:
-        f.write(privateKey.export_key('PEM'))
+        f.write(privateKey)
 
 
 def importPublicKeyRsa(keyId):
