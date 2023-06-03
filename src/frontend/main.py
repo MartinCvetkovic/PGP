@@ -107,8 +107,8 @@ def openKeyWindow():
             sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
         ],
         [
-            sg.Button("Izvezi javni kljuc", key='-EXPORTPU-'),
-            sg.Button("Izvezi privatni kljuc", key='-EXPORTPR-')
+            sg.Button("Izvezi javni kljuc", disabled=True, key='-EXPORTPU-'),
+            sg.Button("Izvezi privatni kljuc", disabled=True, key='-EXPORTPR-')
         ],
         [
             sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
@@ -234,6 +234,8 @@ while True:
                 keyWindow["-PRTABLE-"].update(visible=False)
                 keyWindow["-PUBUTTON-"].update(disabled=True)
                 keyWindow["-PRBUTTON-"].update(disabled=False)
+                keyWindow['-EXPORTPU-'].update(disabled=True)
+                keyWindow['-EXPORTPR-'].update(disabled=True)
 
                 selectedKeyRow = -1
                 keyWindow['-KEYDELBUTTON-'].update(disabled=True)
@@ -241,6 +243,8 @@ while True:
                 keyWindow['-SHOWPR-'].update(disabled=True)
                 keyWindow['-PUTABLE-'].update(select_rows=[])
                 keyWindow['-PRTABLE-'].update(select_rows=[])
+                keyWindow['-EXPORTPU-'].update(disabled=True)
+                keyWindow['-EXPORTPR-'].update(disabled=True)
 
             elif event == "-PRBUTTON-":
                 selectedTable = 0
@@ -261,6 +265,8 @@ while True:
                 keyWindow['-KEYDELBUTTON-'].update(disabled=False)
                 keyWindow['-SHOWPU-'].update(disabled=False)
                 keyWindow['-SHOWPR-'].update(disabled=False)
+                keyWindow['-EXPORTPU-'].update(disabled=False)
+                keyWindow['-EXPORTPR-'].update(disabled=False)
 
             elif event == "-PUTABLE-":
                 print("public click")
@@ -268,6 +274,7 @@ while True:
                 selectedKeyRow = values[event][0]
                 keyWindow['-KEYDELBUTTON-'].update(disabled=False)
                 keyWindow['-SHOWPU-'].update(disabled=False)
+                keyWindow['-EXPORTPU-'].update(disabled=False)
 
             elif event == "-KEYDELBUTTON-":
                 deleteKey()
@@ -278,6 +285,8 @@ while True:
                 keyWindow['-KEYDELBUTTON-'].update(disabled=True)
                 keyWindow['-SHOWPU-'].update(disabled=True)
                 keyWindow['-SHOWPR-'].update(disabled=True)
+                keyWindow['-EXPORTPU-'].update(disabled=True)
+                keyWindow['-EXPORTPR-'].update(disabled=True)
 
             # Prikaz javnog kljuca
             elif event == "-SHOWPU-":
