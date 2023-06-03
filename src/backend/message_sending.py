@@ -24,11 +24,10 @@ def hashSha1(string):
     h.update(bytearray(string, 'utf-8'))
     return h.hexdigest()
 
+
 def encryptPrivateKey(privateKey, password):
     h = hashSha1(password)
     return privateKey.export_key('PEM', h)
-
-
 
 
 def encryptSymmetric(key, plaintext, algorithm):
