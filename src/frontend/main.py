@@ -11,37 +11,57 @@ privateKeyRows = []
 # [???]
 publicKeyRows = []
 
-#0 - Private, 1 - Public
+# 0 - Private, 1 - Public
 selectedTable = 0
 
 selectedKeyRow = -1
 
-def extractKey(keyString):
-    return keyString[keyString.find("KEY-----")+10:keyString.find("-----END")-2]
 
-#Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
+def extractKey(keyString):
+    return keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
+
+
+# Fail, private kljuc ima 800+ char, cak i u 40 redova zauzima ceo ekran
 def formatKey(keyString, charsPerLine):
     key = extractKey(keyString)
-    for i in range(1,(len(key)//charsPerLine) + 1):
-        key = key[:charsPerLine*i+2*(i-1)]+"\n"+key[charsPerLine*i+2*(i-1):]
+    for i in range(1, (len(key) // charsPerLine) + 1):
+        key = key[:charsPerLine * i + 2 * (i - 1)] + "\n" + key[charsPerLine * i + 2 * (i - 1):]
     return key
+
 
 def keyId(keyString):
     key = extractKey(keyString)
-    return key[-64:-42]+"\n"+key[-42:-21]+"\n"+key[-21:]
+    return key[-64:-42] + "\n" + key[-42:-21] + "\n" + key[-21:]
+
 
 def generateKeys(alg, length, name, email, password):
     priv, pub = keygen.generate(alg, length)
-    if (alg == "rsa"): alg = "RSA"
-    else: alg = "DSA / ElG"
-    privateKeyRows.append([alg + " - " + str(length), datetime.now(), keyId(str(pub.exportKey())), str(name), str(email), password, extractKey(str(pub.exportKey())), extractKey(str(priv.exportKey()))])
+    if alg == "rsa":
+        alg = "RSA"
+    else:
+        alg = "DSA / ElG"
+    privateKeyRows.append(
+        [
+            alg + " - " + str(length),
+            datetime.now(),
+            keyId(str(pub.exportKey())),
+            str(name),
+            str(email),
+            password,
+            extractKey(str(pub.exportKey())),
+            extractKey(str(priv.exportKey()))
+        ]
+    )
     return
+
 
 def deleteKey():
     global privateKeyRows, publicKeyRows
-    if (selectedKeyRow == -1): return
-    if (selectedTable == 0): privateKeyRows.pop(selectedKeyRow)
-    elif (selectedTable == 1): publicKeyRows.pop(selectedKeyRow)
+    if selectedKeyRow == -1: return
+    if selectedTable == 0:
+        privateKeyRows.pop(selectedKeyRow)
+    elif selectedTable == 1:
+        publicKeyRows.pop(selectedKeyRow)
 
 
 # --------------------- Layout prozora --------------------------- #
@@ -52,6 +72,7 @@ def openBaseWindow():
         [sg.Button('Primi poruku')]
     ]
     return sg.Window('PGP', layout)
+
 
 def openKeyWindow():
     global selectedTable
@@ -71,7 +92,8 @@ def openKeyWindow():
         ],
         [
             sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Ime', 'Email'],
-                     values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE),
+                     values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True,
+                     select_mode=sg.TABLE_SELECT_MODE_BROWSE),
             sg.Table(headings=['Algoritam', 'Timestamp', 'KeyID', 'Vera u Vlasnika', 'Ime', 'Email',
                                'Legitimitet', 'Potpis(i)', 'Vere u potpis(e)'], values=publicKeyRows, key='-PUTABLE-',
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
@@ -129,13 +151,16 @@ def openGenWindow():
     ]
     return sg.Window('Novi par kljuceva', layout)
 
+
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
     layout = [
-        [sg.Multiline(key, size=(charsPerLine, (len(key)//charsPerLine)+2 ), text_color=sg.theme_text_color(), background_color=sg.theme_text_element_background_color(), disabled=True)],
+        [sg.Multiline(key, size=(charsPerLine, (len(key) // charsPerLine) + 2), text_color=sg.theme_text_color(),
+                      background_color=sg.theme_text_element_background_color(), disabled=True)],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
     return sg.Window('Kljuc', layout)
+
 
 def openPasswordWindow():
     layout = [
@@ -214,18 +239,20 @@ while True:
 
             elif event == "-KEYDELBUTTON-":
                 deleteKey()
-                if (selectedTable == 0): keyWindow['-PRTABLE-'].update(values=privateKeyRows)
-                elif (selectedTable == 1): keyWindow['-PUTABLE-'].update(values=publicKeyRows)
+                if (selectedTable == 0):
+                    keyWindow['-PRTABLE-'].update(values=privateKeyRows)
+                elif (selectedTable == 1):
+                    keyWindow['-PUTABLE-'].update(values=publicKeyRows)
                 keyWindow['-KEYDELBUTTON-'].update(disabled=True)
                 keyWindow['-SHOWPU-'].update(disabled=True)
                 keyWindow['-SHOWPR-'].update(disabled=True)
 
-            #Prikaz javnog kljuca
+            # Prikaz javnog kljuca
             elif event == "-SHOWPU-":
                 if (selectedTable == 0):
                     keyDisplayWindow = openKeyDisplayWindow(privateKeyRows[selectedKeyRow][6])
                 else:
-                    #TODO : Prikaz javnog kljuca u PU table
+                    # TODO : Prikaz javnog kljuca u PU table
                     continue
                 keyWindow.hide()
                 while True:
@@ -236,7 +263,7 @@ while True:
                         break
                 keyWindow.un_hide()
 
-            #Prikaz privatnog kluca
+            # Prikaz privatnog kluca
             elif event == "-SHOWPR-":
                 keyWindow.hide()
                 passwordWindow = openPasswordWindow()
