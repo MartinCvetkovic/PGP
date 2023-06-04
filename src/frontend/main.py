@@ -374,7 +374,7 @@ def credsWindowLoop(tip, key, alg, p):
                     key_util.keyId(str(key.public_key().exportKey())),
                     ime,
                     email,
-                    key_util.hashSha1(p),
+                    p,
                     key_util.extractKey(str(key.public_key().exportKey())),
                     key_util.encryptPrivateKey(key, p),
                     key.public_key()
