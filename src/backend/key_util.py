@@ -28,7 +28,7 @@ def generateKeys(alg, length, name, email, password):
             keyId(str(pub.exportKey())),
             str(name),
             str(email),
-            hashSha1(password),
+            password,
             extractKey(str(pub.exportKey())),
             encryptPrivateKey(priv, password),
             pub

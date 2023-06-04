@@ -1,9 +1,10 @@
 import PySimpleGUI as sg
 import src.backend.key_util
 from datetime import datetime
-from src.backend import import_export
+from src.backend import import_export, message_sending
 from src.backend import key_util
 import src.frontend.layouts as layouts
+from src.frontend.layouts import privateKeyRows
 
 sg.theme('Dark Amber')
 
@@ -53,6 +54,7 @@ selectedKeyRowSend = -1
 
 # --- Prozor slanja poruke --- #
 def sendWindowLoop():
+    global selectedKeyRowSend
     sendWindow = layouts.openSendWindow()
     chosenPrivateKey = None
     chosenPublicKey = None
@@ -77,7 +79,12 @@ def sendWindowLoop():
             sendWindow['-SENDPUBUTTON-'].update(disabled=False)
             chosenPublicKey = layouts.publicKeyRows[selectedKeyRowSend]
         elif event == "-SENDPUBUTTON-":
-            pass
+            sendMessageWindow(chosenPrivateKey, chosenPublicKey)
+            sendWindow["-PRTABLE-"].update(visible=True)
+            sendWindow["-PUTABLE-"].update(visible=False)
+            sendWindow["-SENDPRBUTTON-"].update(disabled=True)
+            sendWindow["-SENDPUBUTTON-"].update(disabled=True)
+            selectedKeyRowSend = -1
         elif event == sg.WIN_CLOSED or event == 'Exit':
             sendWindow.close()
             break
@@ -248,6 +255,30 @@ def keyDisplayWindowLoop(text):
             break
 
 
+# --- Dijalog prozor za slanje poruke --- #
+def sendMessageWindow(chosenPrivateKey, chosenPublicKey):
+    sendMessageWindowLayout = layouts.openSendMessageWindow()
+    while True:
+        event, values = sendMessageWindowLayout.read()
+        print(event, values)
+        if event == '-SENDMESSAGE-':
+            encryptedMessage = message_sending.generateMessage(
+                layouts.privateKeyRows,
+                layouts.publicKeyRows,
+                chosenPrivateKey[4],
+                chosenPublicKey[4],
+                chosenPrivateKey[5],
+                values['-MESSAGE-'],
+                values['-SYM_ALG-']
+            )
+            print(encryptedMessage)
+            sendMessageWindowLayout.close()
+            break
+        elif event == sg.WIN_CLOSED or event == 'OK':
+            sendMessageWindowLayout.close()
+            break
+
+
 # --- Prozor trazenja lozinke za prikaz kljuca --- #
 def passwordDisplayWindowLoop():
     passwordWindow = layouts.openPasswordWindow()
@@ -265,8 +296,8 @@ def passwordDisplayWindowLoop():
                     key_util.decryptPrivateKey(
                         layouts.privateKeyRows[selectedKeyRow][7],
                         layouts.privateKeyRows[selectedKeyRow][5],
-                        layouts.privateKeyRows[selectedKeyRow][0])
-                        .exportKey()))) # -> (Prozor prikaz kljuca)
+                        layouts.privateKeyRows[selectedKeyRow][0]
+                    ).exportKey()))) # -> (Prozor prikaz kljuca)
             else:
                 keyDisplayWindowLoop("Greska: Pogresna lozinka") # -> (Prozor prikaz kljuca (greske))
             break

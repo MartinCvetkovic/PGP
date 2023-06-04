@@ -6,7 +6,7 @@ from math import sqrt, floor
 # keyId,
 # ime,
 # email,
-# hash(lozinka),
+# lozinka,
 # javni kljuc,
 # privatni kljuc enkriptovan u PEM,
 # javni kljuc objekat]
@@ -173,6 +173,23 @@ def openPasswordWindow():
         [
             sg.Button("OK", button_color=('black', 'green')),
             sg.Button("CANCEL", button_color=('white', 'red'))
+        ]
+    ]
+    return sg.Window("Password", layout, resizable=True)
+
+
+def openSendMessageWindow():
+    layout = [
+        [
+            sg.Text("Poruka:"), sg.InputText(key='-MESSAGE-')
+        ],
+        [
+            sg.Text("Simetricni algoritam:"),
+            sg.Radio("TripleDES", "SYM_ALG", default=True, key='-SYM_ALG-'),
+            sg.Radio("AES128", "SYM_ALG", default=False)
+        ],
+        [
+            sg.Button("Posalji", button_color=('black', 'green'), key="-SENDMESSAGE-"),
         ]
     ]
     return sg.Window("Password", layout, resizable=True)

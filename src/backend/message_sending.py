@@ -13,35 +13,35 @@ from src.backend import key_util
 def getKeyIdPublicRing(publicRing, email):
     for row in publicRing:
         if row[4] == email:
-            return publicRing[2]
+            return row[2]
     raise Exception("No key id in public ring")
 
 
 def getPublicKeyPublicRing(publicRing, email):
     for row in publicRing:
         if row[4] == email:
-            return publicRing[6]
+            return row[6]
     raise Exception("No public key in public ring")
 
 
 def getAlgPrivateRing(privateRing, email):
     for row in privateRing:
         if row[4] == email:
-            return privateRing[0]
+            return row[0]
     raise Exception("No alg in private ring")
 
 
 def getKeyIdPrivateRing(privateRing, email):
     for row in privateRing:
         if row[4] == email:
-            return privateRing[2]
+            return row[2]
     raise Exception("No key id in private ring")
 
 
 def getEncryptedPrivateKey(privateRing, email):
     for row in privateRing:
         if row[4] == email:
-            return privateRing[7]
+            return row[7]
     raise Exception("No private key in private ring")
 
 
@@ -90,17 +90,25 @@ def getSessionKey():
     return get_random_bytes(16)
 
 
-def generateMessage(privateKeyRing, publicKeyRing, email, password, message, assymetricAlgorithm, symmetricAlgorithm):
-    privateKeyId = getKeyIdPrivateRing(privateKeyRing, email)
-    publicKeyId = getKeyIdPublicRing(publicKeyRing, email)
-    encryptedPrivateKey = getEncryptedPrivateKey(privateKeyRing, email)
-    publicKey = getPublicKeyPublicRing(publicKeyRing, email)
+def getAlgorithmFromRing(keyRing, email):
+    for row in keyRing:
+        if row[4] == email:
+            return row[0]
+    raise Exception("No algorithm in private ring")
+
+
+def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password, message, symmetricAlgorithm):
+    privateKeyId = getKeyIdPrivateRing(privateKeyRing, emailFrom)
+    publicKeyId = getKeyIdPublicRing(publicKeyRing, emailTo)
+    encryptedPrivateKey = getEncryptedPrivateKey(privateKeyRing, emailFrom)
+    publicKey = getPublicKeyPublicRing(publicKeyRing, emailTo)
+    privateAssymetricAlgorithm = getAlgorithmFromRing(privateKeyRing, emailFrom)
+    publicAssymetricAlgorithm = getAlgorithmFromRing(publicKeyRing, emailTo)
     hashedPassword = key_util.hashSha1(password)
 
-    privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword,
-                                            getAlgPrivateRing(privateKeyRing, email))
+    privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword, getAlgPrivateRing(privateKeyRing, emailFrom))
 
-    encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, assymetricAlgorithm)
+    encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, privateAssymetricAlgorithm)
 
     signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
 
@@ -110,7 +118,7 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
 
     encryptedSignatureAndMessage = encryptSymmetric(sessionKey, zippedMessage, symmetricAlgorithm)
 
-    encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, symmetricAlgorithm)
+    encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, publicAssymetricAlgorithm)
 
     finalMessage = concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
     return base64.encodebytes(bytearray(finalMessage, "utf-8"))
