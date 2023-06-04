@@ -1,6 +1,8 @@
 from Crypto.Cipher import DES3, AES, PKCS1_OAEP
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA, DSA
 from Crypto.Random import get_random_bytes
+from Crypto.Signature import DSS
+
 from src.backend import key_util
 
 
@@ -47,16 +49,19 @@ def encryptSymmetric(key, plaintext, algorithm):
     elif algorithm == "AES128":
         cipher = AES.new(key, AES.MODE_EAX)
         return cipher.encrypt_and_digest(bytearray(plaintext, "utf-8"))[0]
-    return ''
+    raise Exception("Unsupported symmetric algorithm")
 
 
 def encryptAsymmetricAuthentication(key, plaintext, algorithm):
     if algorithm == "RSA":
+        hashedMessage = key_util.hashSha1(plaintext)
         cipher_rsa = PKCS1_OAEP.new(key)
-        return cipher_rsa.encrypt(get_random_bytes(16))
+        return cipher_rsa.encrypt(bytearray(hashedMessage, "utf-8"))
     elif algorithm == "DSA / ElG":
-        pass
-    return ''
+        hashedMessage = key_util.hashSha1Object(plaintext)
+        signer = DSS.new(key, 'fips-186-3')
+        return signer.sign(hashedMessage)
+    raise Exception("Unsupported asymmetric algorithm authentication")
 
 
 def encryptAsymmetricSecrecy(key, plaintext, algorithm):
@@ -65,7 +70,7 @@ def encryptAsymmetricSecrecy(key, plaintext, algorithm):
         return cipher_rsa.encrypt(bytearray(plaintext, "utf-8"))
     elif algorithm == "DSA / ElG":
         pass
-    return ''
+    raise Exception("Unsupported asymmetric algorithm secrecy")
 
 
 def concatanateSignatureAndMessage(keyId, signature, message):
@@ -85,8 +90,8 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
 
     privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword, getAlgPrivateRing(privateKeyRing, email))
 
-    hashedMessage = key_util.hashSha1(message)
-    encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, hashedMessage, assymetricAlgorithm)
+    # TODO zipovanje
+    encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, assymetricAlgorithm)
 
     signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
 
@@ -96,6 +101,12 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
 
     encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, symmetricAlgorithm)
 
+    # TODO radix64
     return concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
 
-# print(encryptAsymmetricAuthentication(RSA.import_key(open("receiver.pem").read()), "asdfg0", "RSA"))
+
+# print(encryptAsymmetricSecrecy(
+#     RSA.import_key(open("../../resources/2QIDAQAB.pem").read(), passphrase=key_util.hashSha1("a")),
+#     "asdfg0",
+#     "DSA / ElG")
+# )

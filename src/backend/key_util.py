@@ -92,3 +92,7 @@ def hashSha1(string):
     h = SHA1.new()
     h.update(bytearray(string, 'utf-8'))
     return h.hexdigest()
+
+
+def hashSha1Object(string):
+    return SHA1.new(bytearray(string, 'utf-8'))
