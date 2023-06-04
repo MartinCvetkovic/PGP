@@ -11,6 +11,7 @@ sg.theme('Dark Amber')
 selectedTable = 0
 selectedKeyRow = -1
 
+
 # -------------------- main --------------------------- #
 # --- Glavni prozor --- #
 def mainWindowLoop():
@@ -26,7 +27,7 @@ def mainWindowLoop():
         if event == 'Kljucevi':
             print('open kljucevi')
             window.close()
-            keyWindowLoop(); # -> (Prozor prsten kljuceva)
+            keyWindowLoop() # -> (Prozor prsten kljuceva)
             window = layouts.openBaseWindow()
 
         # Prozor slanja poruke
@@ -46,13 +47,38 @@ def mainWindowLoop():
     window.close()
 
 
+selectedTableSend = 0
+selectedKeyRowSend = -1
+
+
 # --- Prozor slanja poruke --- #
 def sendWindowLoop():
     sendWindow = layouts.openSendWindow()
+    chosenPrivateKey = None
+    chosenPublicKey = None
     while True:
         event, values = sendWindow.read()
         print(event, values)
-        if event == sg.WIN_CLOSED or event == 'Exit':
+        if event == "-SENDPRBUTTON-":
+            sendWindow["-PRTABLE-"].update(visible=False)
+            sendWindow["-PUTABLE-"].update(visible=True)
+            sendWindow["-SENDPRBUTTON-"].update(disabled=True)
+            sendWindow["-SENDPUBUTTON-"].update(disabled=True)
+        elif event == "-PRTABLE-":
+            print("private send click")
+            if (len(values[event]) == 0): continue
+            selectedKeyRowSend = values[event][0]
+            sendWindow['-SENDPRBUTTON-'].update(disabled=False)
+            chosenPrivateKey = layouts.privateKeyRows[selectedKeyRowSend]
+        elif event == "-PUTABLE-":
+            print("public send click")
+            if (len(values[event]) == 0): continue
+            selectedKeyRowSend = values[event][0]
+            sendWindow['-SENDPUBUTTON-'].update(disabled=False)
+            chosenPublicKey = layouts.publicKeyRows[selectedKeyRowSend]
+        elif event == "-SENDPUBUTTON-":
+            pass
+        elif event == sg.WIN_CLOSED or event == 'Exit':
             sendWindow.close()
             break
 
@@ -336,5 +362,4 @@ def credsWindowLoop(tip, key, alg, p):
             break
 
 
-#Poziv pocetnog prozora
 mainWindowLoop() # -> (Glavni prozor)

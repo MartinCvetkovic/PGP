@@ -67,9 +67,24 @@ def openKeyWindow():
 
 
 def openSendWindow():
+    global selectedTableSend
+    global selectedKeyRowSend
+    global privateKeyRows
+    global publicKeyRows
     layout = [
         [
-            sg.Text("Slanje poruke")
+            sg.Button("Odaberi privatni kljuc", disabled=True, key='-SENDPRBUTTON-'),
+            sg.Button("Odaberi javni kljuc", disabled=True, key='-SENDPUBUTTON-')
+        ],
+        [
+            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ',
+                               '          Email          '],
+                     values=privateKeyRows, key='-PRTABLE-', row_height=48, enable_events=True,
+                     select_mode=sg.TABLE_SELECT_MODE_BROWSE),
+            sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ',
+                               '          Email          ', ],
+                     values=publicKeyRows, key='-PUTABLE-',
+                     visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
     return sg.Window('Slanje', layout, resizable=True)
