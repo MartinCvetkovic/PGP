@@ -1,2 +1,4 @@
 PySimpleGUI==4.60.4
 pycryptodome==3.17
+elgamal
+PyCryptoDomex

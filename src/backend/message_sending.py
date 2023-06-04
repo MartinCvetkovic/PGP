@@ -1,7 +1,11 @@
+import base64
+import zlib
+
 from Crypto.Cipher import DES3, AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA, DSA
 from Crypto.Random import get_random_bytes
 from Crypto.Signature import DSS
+from elgamal.elgamal import Elgamal, PublicKey
 
 from src.backend import key_util
 
@@ -69,7 +73,12 @@ def encryptAsymmetricSecrecy(key, plaintext, algorithm):
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.encrypt(bytearray(plaintext, "utf-8"))
     elif algorithm == "DSA / ElG":
-        pass
+        # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
+        key: DSA.DsaKey
+        p, g, y = key.domain()
+        publicKey = PublicKey(p, g, y)
+        cipher = Elgamal.encrypt(bytearray(plaintext, "utf-8"), publicKey)
+        return cipher.get()
     raise Exception("Unsupported asymmetric algorithm secrecy")
 
 
@@ -88,25 +97,26 @@ def generateMessage(privateKeyRing, publicKeyRing, email, password, message, ass
     publicKey = getPublicKeyPublicRing(publicKeyRing, email)
     hashedPassword = key_util.hashSha1(password)
 
-    privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword, getAlgPrivateRing(privateKeyRing, email))
+    privateKey = key_util.decryptPrivateKey(encryptedPrivateKey, hashedPassword,
+                                            getAlgPrivateRing(privateKeyRing, email))
 
-    # TODO zipovanje
     encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, assymetricAlgorithm)
 
     signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
 
+    zippedMessage = zlib.compress(signatureMessage)
+
     sessionKey = getSessionKey()
 
-    encryptedSignatureAndMessage = encryptSymmetric(sessionKey, signatureMessage, symmetricAlgorithm)
+    encryptedSignatureAndMessage = encryptSymmetric(sessionKey, zippedMessage, symmetricAlgorithm)
 
     encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, symmetricAlgorithm)
 
-    # TODO radix64
-    return concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
-
+    finalMessage = concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
+    return base64.encodebytes(bytearray(finalMessage, "utf-8"))
 
 # print(encryptAsymmetricSecrecy(
-#     RSA.import_key(open("../../resources/2QIDAQAB.pem").read(), passphrase=key_util.hashSha1("a")),
+#     DSA.import_key(open("../../resources/zWkbyA==.pem").read(), passphrase=key_util.hashSha1("a")),
 #     "asdfg0",
 #     "DSA / ElG")
 # )
