@@ -49,10 +49,10 @@ def encryptSymmetric(key, plaintext, algorithm):
     if algorithm == "TripleDES":
         cipher = DES3.new(key, DES3.MODE_CFB)
         # return cipher.iv + cipher.encrypt(bytearray(plaintext, "utf-8")) # mozda ova varijanta radi, ako trenutna nece
-        return cipher.encrypt(bytearray(plaintext, "utf-8"))
+        return cipher.encrypt(plaintext)
     elif algorithm == "AES128":
         cipher = AES.new(key, AES.MODE_EAX)
-        return cipher.encrypt_and_digest(bytearray(plaintext, "utf-8"))[0]
+        return cipher.encrypt_and_digest(plaintext)[0]
     raise Exception("Unsupported symmetric algorithm")
 
 
@@ -61,7 +61,7 @@ def encryptAsymmetricAuthentication(key, plaintext, algorithm):
         hashedMessage = key_util.hashSha1(plaintext)
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.encrypt(bytearray(hashedMessage, "utf-8"))
-    elif algorithm == "DSA / ElG":
+    elif algorithm == "DSA":
         hashedMessage = key_util.hashSha1Object(plaintext)
         signer = DSS.new(key, 'fips-186-3')
         return signer.sign(hashedMessage)
@@ -71,19 +71,19 @@ def encryptAsymmetricAuthentication(key, plaintext, algorithm):
 def encryptAsymmetricSecrecy(key, plaintext, algorithm):
     if algorithm == "RSA":
         cipher_rsa = PKCS1_OAEP.new(key)
-        return cipher_rsa.encrypt(bytearray(plaintext, "utf-8"))
-    elif algorithm == "DSA / ElG":
+        return cipher_rsa.encrypt(plaintext)
+    elif algorithm == "DSA":
         # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
         p, g, y = key.domain()
         publicKey = PublicKey(p, g, y)
-        cipher = Elgamal.encrypt(bytearray(plaintext, "utf-8"), publicKey)
+        cipher = Elgamal.encrypt(plaintext, publicKey)
         return cipher.get()
     raise Exception("Unsupported asymmetric algorithm secrecy")
 
 
 def concatanateSignatureAndMessage(keyId, signature, message):
-    return keyId + signature + message
+    return bytearray(keyId, "utf-8") + signature + bytearray(message, "utf-8")
 
 
 def getSessionKey():
@@ -110,7 +110,7 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
 
     encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, privateAssymetricAlgorithm)
 
-    signatureMessage = concatanateSignatureAndMessage(privateKeyId, encryptedHashedMessage, message)
+    signatureMessage = bytearray(privateKeyId, "utf-8") + encryptedHashedMessage + bytearray(message, "utf-8")
 
     zippedMessage = zlib.compress(signatureMessage)
 
@@ -120,11 +120,5 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
 
     encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, publicAssymetricAlgorithm)
 
-    finalMessage = concatanateSignatureAndMessage(publicKeyId, encryptedSessionKey, encryptedSignatureAndMessage)
-    return base64.encodebytes(bytearray(finalMessage, "utf-8"))
-
-# print(encryptAsymmetricSecrecy(
-#     DSA.import_key(open("../../resources/zWkbyA==.pem").read(), passphrase=key_util.hashSha1("a")),
-#     "asdfg0",
-#     "DSA / ElG")
-# )
+    finalMessage = bytearray(publicKeyId, "utf-8") + encryptedSessionKey + encryptedSignatureAndMessage
+    return base64.encodebytes(finalMessage)

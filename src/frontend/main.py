@@ -269,7 +269,7 @@ def sendMessageWindow(chosenPrivateKey, chosenPublicKey):
                 chosenPublicKey[4],
                 chosenPrivateKey[5],
                 values['-MESSAGE-'],
-                values['-SYM_ALG-']
+                "TripleDES" if values['-SYM_ALG-'] else "AES128"
             )
             print(encryptedMessage)
             sendMessageWindowLayout.close()
