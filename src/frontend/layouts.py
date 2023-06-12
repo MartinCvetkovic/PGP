@@ -24,11 +24,14 @@ publicKeyRows = []
 
 def openBaseWindow():
     layout = [
-        [sg.Button('Kljucevi')],
-        [sg.Button('Posalji poruku')],
-        [sg.Button('Primi poruku')]
+        [sg.Text("")],
+        [sg.Text(""),sg.Button('              Kljucevi               ', key='Kljucevi'),sg.Text("")],
+        [sg.Text("")],
+        [sg.Text(""),sg.Button('          Posalji poruku          ', key='Posalji poruku'),sg.Text("")],
+        [sg.Text(""),sg.Button('           Primi poruku           ', key='Primi poruku'),sg.Text("")],
+        [sg.Text("")]
     ]
-    return sg.Window('PGP', layout, resizable=True)
+    return sg.Window('PGP', layout, resizable=False)
 
 
 def openKeyWindow():
@@ -64,7 +67,7 @@ def openKeyWindow():
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
-    return sg.Window('Kljucevi', layout, resizable=True)
+    return sg.Window('Kljucevi', layout, resizable=False)
 
 
 def openSendWindow():
@@ -88,7 +91,7 @@ def openSendWindow():
                      visible=False, row_height=48, enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)
         ]
     ]
-    return sg.Window('Slanje', layout, resizable=True)
+    return sg.Window('Slanje', layout, resizable=False)
 
 
 def openReceiveWindow():
@@ -97,7 +100,7 @@ def openReceiveWindow():
             sg.Text("Prijem poruke")
         ]
     ]
-    return sg.Window('Prijem', layout, resizable=True)
+    return sg.Window('Prijem', layout, resizable=False)
 
 
 def openGenWindow():
@@ -130,7 +133,7 @@ def openGenWindow():
             sg.Text("", text_color='red', key='-LABEL-')
         ]
     ]
-    return sg.Window('Novi par kljuceva', layout, resizable=True)
+    return sg.Window('Novi par kljuceva', layout, resizable=False)
 
 def openCredWindow():
     layout = [
@@ -148,7 +151,7 @@ def openCredWindow():
             sg.Text("", text_color='red', key='-LABEL-')
         ]
     ]
-    return sg.Window('Unos imena i lozinke', layout, resizable=True)
+    return sg.Window('Unos imena i lozinke', layout, resizable=False)
 
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
@@ -165,7 +168,7 @@ def openKeyDisplayWindow(key):
         ],
         [sg.Button("OK", button_color=('black', 'green'))]
     ]
-    return sg.Window('Kljuc', layout, resizable=True)
+    return sg.Window('Kljuc', layout, resizable=False)
 
 
 def openPasswordWindow():
@@ -178,7 +181,7 @@ def openPasswordWindow():
             sg.Button("CANCEL", button_color=('white', 'red'))
         ]
     ]
-    return sg.Window("Password", layout, resizable=True)
+    return sg.Window("Password", layout, resizable=False)
 
 
 def openSendMessageWindow():
@@ -195,4 +198,4 @@ def openSendMessageWindow():
             sg.Button("Posalji", button_color=('black', 'green'), key="-SENDMESSAGE-"),
         ]
     ]
-    return sg.Window("Password", layout, resizable=True)
+    return sg.Window("Password", layout, resizable=False)
