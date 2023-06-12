@@ -37,22 +37,23 @@ def openKeyWindow():
     global publicKeyRows
     layout = [
         [
-            sg.Button("Privatni prsten", disabled=True, key='-PRBUTTON-'),
-            sg.Button("Javni prsten", key='-PUBUTTON-')
+            sg.Button("     Privatni prsten     ", disabled=True, key='-PRBUTTON-'),
+            sg.Button("         Javni prsten         ", key='-PUBUTTON-')
         ],
         [
-            sg.Button("Prikazi javni kljuc", disabled=True, key='-SHOWPU-'),
-            sg.Button("Prikazi privatni kljuc", disabled=True, key='-SHOWPR-')
+            sg.Button("   Prikazi javni kljuc   ", disabled=True, key='-SHOWPU-'),
+            sg.Button("   Prikazi privatni kljuc   ", disabled=True, key='-SHOWPR-')
         ],
+        [sg.Text(" ")],
         [
-            sg.Button("Izvezi javni kljuc", disabled=True, key='-EXPORTPU-'),
-            sg.Button("Izvezi privatni kljuc", disabled=True, key='-EXPORTPR-'),
-            sg.FileBrowse("Uvezi kljuc", file_types=(("Pem Files", "*.pem"),), key='-IMPORT-', target='-IMPORTINPUT-'),
+            sg.Button(" ▲ Izvezi javni kljuc   ", disabled=True, key='-EXPORTPU-'),
+            sg.Button(" ▲ Izvezi privatni kljuc   ", disabled=True, key='-EXPORTPR-'),
+            sg.FileBrowse("    ▼ Uvezi kljuc       ", file_types=(("Pem Files", "*.pem"),), key='-IMPORT-', target='-IMPORTINPUT-'),
             sg.Input(key='-IMPORTINPUT-', enable_events=True, visible=False)
         ],
         [
-            sg.Button("Generisi novi par kljuceva", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
-            sg.Button("Obrisi", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
+            sg.Button("        Generisi novi par kljuceva        ", button_color=('black', 'green'), key='-KEYGENBUTTON-'),
+            sg.Button("                    Obrisi                     ", disabled=True, button_color=('white', 'red'), key='-KEYDELBUTTON-')
         ],
         [
             sg.Table(headings=[' Algoritam ', '     Timestamp     ', '      KeyID      ', '      Ime      ', '          Email          '],
@@ -102,7 +103,7 @@ def openReceiveWindow():
 def openGenWindow():
     layout = [
         [
-            sg.Text("Algoritam:"),
+            sg.Text("Algoritam:       "),
             sg.Radio("RSA", "R1", default=True, key='-ALG-'),
             sg.Radio("DSA / ElGamal", "R1", default=False)
         ],
@@ -112,11 +113,11 @@ def openGenWindow():
             sg.Radio("2048", "R2", default=False)
         ],
         [
-            sg.Text("Ime"),
+            sg.Text("Ime      "),
             sg.InputText(key='-NAME-')
         ],
         [
-            sg.Text("Email"),
+            sg.Text("Email   "),
             sg.InputText(key='-EMAIL-')
         ],
         [
@@ -125,7 +126,8 @@ def openGenWindow():
         ],
         [
             sg.Button("OK", button_color=('black', 'green')),
-            sg.Button("CANCEL", button_color=('white', 'red'))
+            sg.Button("CANCEL", button_color=('white', 'red')),
+            sg.Text("", text_color='red', key='-LABEL-')
         ]
     ]
     return sg.Window('Novi par kljuceva', layout, resizable=True)
@@ -133,19 +135,20 @@ def openGenWindow():
 def openCredWindow():
     layout = [
         [
-            sg.Text("Ime"),
+            sg.Text("Ime      "),
             sg.InputText(key='-NAME-')
         ],
         [
-            sg.Text("Email"),
+            sg.Text("Email   "),
             sg.InputText(key='-EMAIL-')
         ],
         [
             sg.Button("OK", button_color=('black', 'green')),
-            sg.Button("CANCEL", button_color=('white', 'red'))
+            sg.Button("CANCEL", button_color=('white', 'red')),
+            sg.Text("", text_color='red', key='-LABEL-')
         ]
     ]
-    return sg.Window('Novi par kljuceva', layout, resizable=True)
+    return sg.Window('Unos imena i lozinke', layout, resizable=True)
 
 def openKeyDisplayWindow(key):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3

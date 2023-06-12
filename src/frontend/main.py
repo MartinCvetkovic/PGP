@@ -84,6 +84,8 @@ def sendWindowLoop():
             sendWindow["-PUTABLE-"].update(visible=False)
             sendWindow["-SENDPRBUTTON-"].update(disabled=True)
             sendWindow["-SENDPUBUTTON-"].update(disabled=True)
+            sendWindow['-PUTABLE-'].update(select_rows=[])
+            sendWindow['-PRTABLE-'].update(select_rows=[])
             selectedKeyRowSend = -1
         elif event == sg.WIN_CLOSED or event == 'Exit':
             sendWindow.close()
@@ -233,11 +235,24 @@ def keygenWindowLoop():
     while True:
         event, values = genWindow.read()
         print(event, values)
+        genWindow['-LABEL-'].update(value='')
         if event == sg.WIN_CLOSED or event == 'CANCEL':
             genWindow.close()
             break
         if event == 'OK':
             print(values['-PASSWORD-'])
+            if ((values['-PASSWORD-'] == "") or (values['-NAME-'] == "") or (values['-EMAIL-'] == "")):
+                genWindow['-LABEL-'].update(value='Sva polja su obavezna')
+                continue
+
+            btwo = False
+            for row in layouts.privateKeyRows:
+                if (values['-NAME-'] == row[3] and values['-EMAIL-'] == row[4]):
+                    genWindow['-LABEL-'].update(value='Kombinacija ime + email mora biti jedinstvena')
+                    btwo = True
+                    break
+            if (btwo): continue
+
             key_util.generateKeys("rsa" if values["-ALG-"] else "dsa", 1024 if values['-LEN-'] else 2048,
                                   values['-NAME-'], values['-EMAIL-'], values['-PASSWORD-'])
             genWindow.close()
@@ -291,11 +306,11 @@ def passwordDisplayWindowLoop():
         elif event == 'OK':
             print(values['-PASSWORD-'])
             passwordWindow.close()
-            if (src.backend.key_util.hashSha1(values['-PASSWORD-']) == layouts.privateKeyRows[selectedKeyRow][5]):
+            if (values['-PASSWORD-'] == layouts.privateKeyRows[selectedKeyRow][5]):
                 keyDisplayWindowLoop(key_util.extractKey(str(
                     key_util.decryptPrivateKey(
                         layouts.privateKeyRows[selectedKeyRow][7],
-                        layouts.privateKeyRows[selectedKeyRow][5],
+                        src.backend.key_util.hashSha1(layouts.privateKeyRows[selectedKeyRow][5]),
                         layouts.privateKeyRows[selectedKeyRow][0]
                     ).exportKey()))) # -> (Prozor prikaz kljuca)
             else:
@@ -363,11 +378,25 @@ def credsWindowLoop(tip, key, alg, p):
             credsWindow.close()
             break
         elif event == "OK":
+            if ((values['-NAME-'] == "") or (values['-EMAIL-'] == "")):
+                credsWindow['-LABEL-'].update(value='Sva polja su obavezna')
+                continue
+
+
             ime = values['-NAME-']
             email = values['-EMAIL-']
 
             # Ubacivanje kljuca u prsten kljuceva
             if (tip == "PR"):
+                btwo = False
+                for row in layouts.privateKeyRows:
+                    if (values['-NAME-'] == row[3] and values['-EMAIL-'] == row[4]):
+                        credsWindow['-LABEL-'].update(value='Kombinacija ime + email mora biti jedinstvena')
+                        btwo = True
+                        break
+                if (btwo): continue
+
+
                 layouts.privateKeyRows.append([
                     alg,
                     datetime.now(),
@@ -380,6 +409,14 @@ def credsWindowLoop(tip, key, alg, p):
                     key.public_key()
                 ])
             elif (tip == "PU"):
+                btwo = False
+                for row in layouts.publicKeyRows:
+                    if (values['-NAME-'] == row[3] and values['-EMAIL-'] == row[4]):
+                        credsWindow['-LABEL-'].update(value='Kombinacija ime + email mora biti jedinstvena')
+                        btwo = True
+                        break
+                if (btwo): continue
+
                 layouts.publicKeyRows.append([
                     alg,
                     datetime.now(),

@@ -57,11 +57,11 @@ def encryptSymmetric(key, plaintext, algorithm):
 
 
 def encryptAsymmetricAuthentication(key, plaintext, algorithm):
-    if algorithm == "RSA":
+    if algorithm[:3] == "RSA":
         hashedMessage = key_util.hashSha1(plaintext)
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.encrypt(bytearray(hashedMessage, "utf-8"))
-    elif algorithm == "DSA":
+    elif algorithm[:3] == "DSA":
         hashedMessage = key_util.hashSha1Object(plaintext)
         signer = DSS.new(key, 'fips-186-3')
         return signer.sign(hashedMessage)
@@ -69,10 +69,10 @@ def encryptAsymmetricAuthentication(key, plaintext, algorithm):
 
 
 def encryptAsymmetricSecrecy(key, plaintext, algorithm):
-    if algorithm == "RSA":
+    if algorithm[:3] == "RSA":
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.encrypt(plaintext)
-    elif algorithm == "DSA":
+    elif algorithm[:3] == "DSA":
         # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
         p, g, y = key.domain()
