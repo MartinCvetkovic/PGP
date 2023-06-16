@@ -1,6 +1,7 @@
 import base64
 import time
 import zlib
+import json
 
 from Crypto.Cipher import DES3, AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA, DSA
@@ -127,11 +128,15 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
     encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, publicAssymetricAlgorithm)
 
     finalMessage = {
-        "publicKeyId": bytearray(publicKeyId, "utf-8"),
+        "publicKeyId": publicKeyId,
         "encryptedSessionKey": encryptedSessionKey,
         "encryptedSignatureAndMessage": encryptedSignatureAndMessage
     }
-    finalCipher = base64.encodebytes(bytearray(str(finalMessage), "utf-8"))
+
+    finalMessage['encryptedSessionKey'] = base64.encodebytes(finalMessage['encryptedSessionKey']).decode()
+    finalMessage['encryptedSignatureAndMessage'] = base64.encodebytes(finalMessage['encryptedSignatureAndMessage']).decode()
+
+    finalCipher = base64.encodebytes(bytearray(json.dumps(finalMessage), "utf-8"))
 
     with open(RESOURCES_PATH + str(time.time()) + '.txt', 'wb') as f:
         f.write(finalCipher)
