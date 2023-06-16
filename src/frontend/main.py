@@ -5,6 +5,7 @@ from src.backend import import_export, message_sending
 from src.backend import key_util
 import src.frontend.layouts as layouts
 from src.frontend.layouts import privateKeyRows
+from src.backend.message_receiving import decodeMessage
 
 sg.theme('Dark Amber')
 
@@ -39,10 +40,10 @@ def mainWindowLoop():
             window.un_hide()
 
         # Prozor prijema poruke
-        elif event == 'Primi poruku':
+        elif event == '-RECEIVEMSG-':
             print('open primi poruku')
             window.hide()
-            receiveWindowLoop() # -> (Prozor prijema poruke)
+            receiveWindowLoop(values['Primi poruku']) # -> (Prozor prijema poruke)
             window.un_hide()
 
     window.close()
@@ -93,8 +94,9 @@ def sendWindowLoop():
 
 
 # --- Prozor prijema poruke --- #
-def receiveWindowLoop():
-    receiveWindow = layouts.openReceiveWindow()
+def receiveWindowLoop(path):
+    receiveWindow = layouts.openReceiveWindow(decodeMessage(path))
+
     while True:
         event, values = receiveWindow.read()
         print(event, values)

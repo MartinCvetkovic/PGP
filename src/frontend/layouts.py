@@ -28,7 +28,10 @@ def openBaseWindow():
         [sg.Text(""),sg.Button('              Kljucevi               ', key='Kljucevi'),sg.Text("")],
         [sg.Text("")],
         [sg.Text(""),sg.Button('          Posalji poruku          ', key='Posalji poruku'),sg.Text("")],
-        [sg.Text(""),sg.Button('           Primi poruku           ', key='Primi poruku'),sg.Text("")],
+        [
+            sg.Text(""),sg.FileBrowse('           Primi poruku           ', file_types=(("Text Files", "*.txt"),), key='Primi poruku', target='-RECEIVEMSG-'),sg.Text(""),
+            sg.Input(key='-RECEIVEMSG-', enable_events=True, visible=False)
+        ],
         [sg.Text("")]
     ]
     return sg.Window('PGP', layout, resizable=False)
@@ -94,10 +97,18 @@ def openSendWindow():
     return sg.Window('Slanje', layout, resizable=False)
 
 
-def openReceiveWindow():
+def openReceiveWindow(text):
+    charsPerLine = floor(sqrt(len(text)) * 2.5) + 3
+    if (charsPerLine < 28): charsPerLine = 28
     layout = [
         [
-            sg.Text("Prijem poruke")
+            sg.Multiline(
+                text,
+                size=(charsPerLine, (len(text) // charsPerLine) + 2),
+                text_color=sg.theme_text_color(),
+                background_color=sg.theme_text_element_background_color(),
+                disabled=True
+            )
         ]
     ]
     return sg.Window('Prijem', layout, resizable=False)
