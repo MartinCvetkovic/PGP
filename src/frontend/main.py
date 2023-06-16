@@ -7,6 +7,7 @@ import src.frontend.layouts as layouts
 from src.frontend.layouts import privateKeyRows
 from src.backend.message_receiving import decodeMessage
 
+
 sg.theme('Dark Amber')
 
 # 0 - Private, 1 - Public
