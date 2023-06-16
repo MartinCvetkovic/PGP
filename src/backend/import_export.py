@@ -2,7 +2,7 @@ from Crypto.PublicKey import DSA
 from Crypto.PublicKey import RSA
 
 
-RESOURCES_PATH = "../../resources/"
+RESOURCES_PATH = "../../resources/keys/"
 
 
 def exportPublicKey(keyId, publicKey):

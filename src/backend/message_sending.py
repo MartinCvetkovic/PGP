@@ -1,4 +1,5 @@
 import base64
+import time
 import zlib
 
 from Crypto.Cipher import DES3, AES, PKCS1_OAEP
@@ -9,6 +10,7 @@ from elgamal.elgamal import Elgamal, PublicKey
 
 from src.backend import key_util
 
+RESOURCES_PATH = "../../resources/messages/"
 
 def getKeyIdPublicRing(publicRing, email):
     for row in publicRing:
@@ -110,9 +112,13 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
 
     encryptedHashedMessage = encryptAsymmetricAuthentication(privateKey, message, privateAssymetricAlgorithm)
 
-    signatureMessage = bytearray(privateKeyId, "utf-8") + encryptedHashedMessage + bytearray(message, "utf-8")
+    signatureMessage = {
+        "privateKeyId": bytearray(privateKeyId, "utf-8"),
+        "encryptedHashedMessage": encryptedHashedMessage,
+        "message": bytearray(message, "utf-8")
+    }
 
-    zippedMessage = zlib.compress(signatureMessage)
+    zippedMessage = zlib.compress(bytearray(str(signatureMessage), "utf-8"))
 
     sessionKey = getSessionKey()
 
@@ -120,5 +126,14 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
 
     encryptedSessionKey = encryptAsymmetricSecrecy(publicKey, sessionKey, publicAssymetricAlgorithm)
 
-    finalMessage = bytearray(publicKeyId, "utf-8") + encryptedSessionKey + encryptedSignatureAndMessage
-    return base64.encodebytes(finalMessage)
+    finalMessage = {
+        "publicKeyId": bytearray(publicKeyId, "utf-8"),
+        "encryptedSessionKey": encryptedSessionKey,
+        "encryptedSignatureAndMessage": encryptedSignatureAndMessage
+    }
+    finalCipher = base64.encodebytes(bytearray(str(finalMessage), "utf-8"))
+
+    with open(RESOURCES_PATH + str(time.time()) + '.txt', 'wb') as f:
+        f.write(finalCipher)
+
+    return finalCipher
