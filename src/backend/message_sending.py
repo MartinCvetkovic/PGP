@@ -80,10 +80,11 @@ def encryptAsymmetricSecrecy(key, plaintext, algorithm):
     elif algorithm[:3] == "DSA":
         # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
-        p, g, y = key.domain()
-        publicKey = PublicKey(p, g, y)
+        pk = key.public_key()
+        publicKey = PublicKey(pk._key['p']._value, pk._key['g']._value, pk._key['y']._value)
         cipher = Elgamal.encrypt(plaintext, publicKey)
-        return cipher.get()
+        tup = cipher.get()
+        return tup
     raise Exception("Unsupported asymmetric algorithm secrecy")
 
 
@@ -140,7 +141,8 @@ def generateMessage(privateKeyRing, publicKeyRing, emailFrom, emailTo, password,
         "encryptedSignatureAndMessage": encryptedSignatureAndMessage
     }
 
-    finalMessage['encryptedSessionKey'] = base64.encodebytes(finalMessage['encryptedSessionKey']).decode()
+    if (publicAssymetricAlgorithm[:3] != "DSA"):
+        finalMessage['encryptedSessionKey'] = base64.encodebytes(finalMessage['encryptedSessionKey']).decode()
     finalMessage['encryptedSignatureAndMessage'] = base64.encodebytes(finalMessage['encryptedSignatureAndMessage']).decode()
     finalMessage['symmetricNonce'] = base64.encodebytes(finalMessage['symmetricNonce']).decode()
 

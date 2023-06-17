@@ -11,7 +11,7 @@ from Crypto.Cipher import DES3, AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA, DSA
 from Crypto.Random import get_random_bytes
 from Crypto.Signature import DSS, PKCS1_v1_5
-from elgamal.elgamal import Elgamal, PrivateKey
+from elgamal.elgamal import Elgamal, PrivateKey, CipherText
 
 from src.frontend.layouts import privateKeyRows, publicKeyRows
 
@@ -22,10 +22,9 @@ def decryptAsymmetricSecrecy(key, ciphertext, algorithm):
     elif algorithm[:3] == "DSA":
         # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
-        p, g, y = key.domain()
-        privateKey = PrivateKey(p, g, y)
-        plain = Elgamal.decrypt(ciphertext, privateKey)
-        return plain.get()
+        privateKey = PrivateKey(key._key['p']._value, key._key['x']._value)
+        plain = Elgamal.decrypt(CipherText(ciphertext[0], ciphertext[1]), privateKey)
+        return plain
     raise Exception("Unsupported asymmetric algorithm secrecy")
 
 
@@ -68,7 +67,6 @@ def decodeMessage(path):
             finalMessage = json.loads(fileString)
         except json.decoder.JSONDecodeError:
             return "Greska: Poruka je koruptovana."
-        finalMessage['encryptedSessionKey'] = base64.decodebytes(bytearray(finalMessage['encryptedSessionKey'], "utf-8"))
         finalMessage['encryptedSignatureAndMessage'] = base64.decodebytes(bytearray(finalMessage['encryptedSignatureAndMessage'], "utf-8"))
         finalMessage['symmetricNonce'] = base64.decodebytes(bytearray(finalMessage['symmetricNonce'], "utf-8"))
 
@@ -84,6 +82,8 @@ def decodeMessage(path):
                 encryptedPrivateKey = row[7]
                 password = row[5]
                 asymmetricAlgorithm = row[0]
+                if (asymmetricAlgorithm[:3] != "DSA"):
+                    finalMessage['encryptedSessionKey'] = base64.decodebytes(bytearray(finalMessage['encryptedSessionKey'], "utf-8"))
                 break
 
         if (encryptedPrivateKey == ""):
