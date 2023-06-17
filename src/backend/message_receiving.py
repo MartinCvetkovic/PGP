@@ -20,7 +20,6 @@ def decryptAsymmetricSecrecy(key, ciphertext, algorithm):
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.decrypt(ciphertext)
     elif algorithm[:3] == "DSA":
-        # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
         privateKey = PrivateKey(key._key['p']._value, key._key['x']._value)
         plain = Elgamal.decrypt(CipherText(ciphertext[0], ciphertext[1]), privateKey)
@@ -115,6 +114,16 @@ def decodeMessage(path):
                 asymmetricAlgorithm = row[0]
                 validated = False
                 break
+
+        #Dodatno trazenje javnog kljuca u privatnom prstenu
+        if (validated):
+            for row in privateKeyRows:
+                if (row[2] == signatureMessage['privateKeyId']):
+                    publicKey = row[8]
+                    asymmetricAlgorithm = row[0]
+                    validated = False
+                    break
+
 
         #Provera potpisa
         if (validated):

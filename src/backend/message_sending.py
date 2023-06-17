@@ -78,7 +78,6 @@ def encryptAsymmetricSecrecy(key, plaintext, algorithm):
         cipher_rsa = PKCS1_OAEP.new(key)
         return cipher_rsa.encrypt(plaintext)
     elif algorithm[:3] == "DSA":
-        # TODO elgamal do mojega - pitanje da li radi, ima i greska u biblioteci, sve je pod znakom pitanja, ali nema bolje
         key: DSA.DsaKey
         pk = key.public_key()
         publicKey = PublicKey(pk._key['p']._value, pk._key['g']._value, pk._key['y']._value)

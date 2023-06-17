@@ -9,6 +9,37 @@ from datetime import datetime
 def extractKey(keyString):
     return keyString[keyString.find("KEY-----") + 10:keyString.find("-----END") - 2]
 
+def extractAttributes(key, keyType, algorithm):
+    if (algorithm[:3] == 'RSA'):
+        if (keyType == 'public'):
+            attributes = {
+                'n': key.n,
+                'e': key.e
+            }
+        else:
+            attributes = {
+                'n': key.n,
+                'd': key.d
+            }
+    elif (algorithm[:3]=='DSA'):
+        if (keyType == 'public'):
+            attributes = {
+                'p': key._key['p']._value,
+                'q': key._key['q']._value,
+                'g': key._key['g']._value,
+                'y': key._key['y']._value
+            }
+        else:
+            attributes = {
+                'p': key._key['p']._value,
+                'q': key._key['q']._value,
+                'g': key._key['g']._value,
+                'x': key._key['y']._value
+            }
+    else:
+        return None
+
+    return attributes
 
 def keyId(keyString):
     key = extractKey(keyString)

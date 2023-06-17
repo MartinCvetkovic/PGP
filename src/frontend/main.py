@@ -187,10 +187,19 @@ def keyWindowLoop():
         # Prikaz javnog kljuca
         elif event == "-SHOWPU-":
             keyWindow.hide()
+
             if (selectedTable == 0):
-                keyDisplayWindowLoop(layouts.privateKeyRows[selectedKeyRow][6]) # -> (Prozor prikaz kljuca)
+                publicKey = layouts.privateKeyRows[selectedKeyRow][6]
+                algorithm = layouts.privateKeyRows[selectedKeyRow][0]
+                keyObject = layouts.privateKeyRows[selectedKeyRow][8]
             else:
-                keyDisplayWindowLoop(layouts.publicKeyRows[selectedKeyRow][5]) # -> (Prozor prikaz kljuca)
+                publicKey = layouts.publicKeyRows[selectedKeyRow][5]
+                algorithm = layouts.publicKeyRows[selectedKeyRow][0]
+                keyObject = layouts.publicKeyRows[selectedKeyRow][6]
+
+            attributes = key_util.extractAttributes(keyObject, 'public', algorithm)
+
+            keyDisplayWindowLoop(publicKey, attributes) # -> (Prozor prikaz kljuca)
             keyWindow.un_hide()
 
         # Prikaz privatnog kluca
@@ -263,8 +272,8 @@ def keygenWindowLoop():
 
 
 # --- Prozor prikaza kljuca --- #
-def keyDisplayWindowLoop(text):
-    keyDisplayWindow = layouts.openKeyDisplayWindow(text)
+def keyDisplayWindowLoop(text, attributes = None):
+    keyDisplayWindow = layouts.openKeyDisplayWindow(text, attributes)
     while True:
         event, values = keyDisplayWindow.read()
         print(event, values)
@@ -310,12 +319,15 @@ def passwordDisplayWindowLoop():
             print(values['-PASSWORD-'])
             passwordWindow.close()
             if (values['-PASSWORD-'] == layouts.privateKeyRows[selectedKeyRow][5]):
-                keyDisplayWindowLoop(key_util.extractKey(str(
-                    key_util.decryptPrivateKey(
+                decryptedPrivateKey = key_util.decryptPrivateKey(
                         layouts.privateKeyRows[selectedKeyRow][7],
                         src.backend.key_util.hashSha1(layouts.privateKeyRows[selectedKeyRow][5]),
                         layouts.privateKeyRows[selectedKeyRow][0]
-                    ).exportKey()))) # -> (Prozor prikaz kljuca)
+                    )
+                algorithm = layouts.privateKeyRows[selectedKeyRow][0]
+                attributes = key_util.extractAttributes(decryptedPrivateKey, 'private', algorithm)
+                keyDisplayWindowLoop(key_util.extractKey(str(
+                    decryptedPrivateKey.exportKey())), attributes) # -> (Prozor prikaz kljuca)
             else:
                 keyDisplayWindowLoop("Greska: Pogresna lozinka") # -> (Prozor prikaz kljuca (greske))
             break

@@ -164,7 +164,7 @@ def openCredWindow():
     ]
     return sg.Window('Unos imena i lozinke', layout, resizable=False)
 
-def openKeyDisplayWindow(key):
+def openKeyDisplayWindow(key, attributes=None):
     charsPerLine = floor(sqrt(len(key)) * 2.5) + 3
     if (charsPerLine < 28): charsPerLine = 28
     layout = [
@@ -176,9 +176,22 @@ def openKeyDisplayWindow(key):
                 background_color=sg.theme_text_element_background_color(),
                 disabled=True
             )
-        ],
-        [sg.Button("OK", button_color=('black', 'green'))]
+        ]
+
+
     ]
+    if (attributes is not None):
+        layout.append([sg.Text("============ Parametri Kljuca ============")])
+        for key in attributes.keys():
+            layout.append([sg.Text(key), sg.Multiline(
+                attributes[key],
+                size=(charsPerLine-len(key)-3, (len(str(attributes[key])) // charsPerLine) + 2),
+                text_color=sg.theme_text_color(),
+                background_color=sg.theme_text_element_background_color(),
+                disabled=True
+            )])
+
+    layout.append([sg.Button("OK", button_color=('black', 'green'))])
     return sg.Window('Kljuc', layout, resizable=False)
 
 
